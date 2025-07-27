@@ -1,0 +1,54 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "features": {
+    "edit_prediction_provider": "zed"
+  },
+  "agent": {
+    "default_model": {
+      "provider": "copilot_chat",
+      "model": "gpt-4.1"
+    },
+  },
+  "icon_theme": "Catppuccin Frappé",
+  "ui_font_size": 16,
+  "buffer_font_size": 16,
+  "theme": {
+    "mode": "system",
+    "light": "Skeletor",
+    "dark": "One Dark"
+  },
+  "editor.format_on_save": false,
+  "languages": {
+    "JavaScript": {
+      "format_on_save": "off"
+    },
+    "HTML": {
+      "format_on_save": "off"
+    },
+    "Python": {
+      "format_on_save": "off"
+    },
+    "C": {
+      "format_on_save": "off"
+    },
+    "C++": {
+      "format_on_save": "off"
+    },
+    "Rust": {
+      "format_on_save": "off"
+    },
+    "CSS": {
+      "format_on_save": "off"
+    },
+    "Java": {
+      "format_on_save": "off"
+    }
+  }
+}
