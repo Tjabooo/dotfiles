@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+
+# start gnome keyring for secrets
+eval $(/usr/bin/gnome-keyring-daemon --start --components=secrets,ssh)
+export SSH_AUTH_SOCK

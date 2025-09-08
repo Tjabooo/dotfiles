@@ -1,119 +1,136 @@
 {
-	"layer": "top",
-	"modules-left": ["custom/launcher","cpu","memory", "custom/media", "custom/spotify",],
-	"modules-center": ["river/tags", "wlr/workspaces", "custom/clock"],
-	"modules-right": ["custom/updates", "backlight","pulseaudio", "hyprland/language", "network", "battery"],
+  "layer": "top",
+  "modules-left": ["custom/launcher", "cpu", "custom/memory", "custom/media", "custom/spotify"],
+  "modules-center": ["river/tags", "wlr/workspaces", "custom/clock"],
+  "modules-right": ["custom/updates", "backlight", "pulseaudio", "hyprland/language", "network", "battery"],
+  "margin-top": 10,
+  "margin-left": 10,
+  "margin-right": 10,
 
-	"pulseaudio": {
-		"tooltip": false,
-		"scroll-step": 5,
-		"format": "{icon} {volume}%",
-		"format-muted": "{icon} {volume}%",
-		"on-click":"pactl set-sink-mute @DEFAULT_SINK@ toggle",
-		"format-icons": {
-			"default": ["", "", " "]
-		}
-	},
-    "river/tags": {
-		"num-tags": 6
-    },
-	"network": {
-		"tooltip": false,
-		"format-wifi": "  {essid}",
-		"format-ethernet": ""
-	},
-	"backlight": {
-		"tooltip": false,
-		"format": " {}%",
-		"interval":1,
-        "on-scroll-up": "light -A 5",
-		"on-scroll-down": "light -U 5"
-	},
-    "battery": {
-        "states": {
-            "good": 95,
-            "warning": 30,
-            "critical": 20
-        },
-        "format": "{icon}  {capacity}%",
-        "format-charging": " {capacity}%",
-        "format-plugged": " {capacity}%",
-        "format-alt": "{time} {icon}",
-        "format-icons": ["", "", "", "", ""]
-    },
-	"tray":{
-		"icon-size":18,
-		"spacing": 10
-	},
-    "wlr/workspaces": {
-        "format": "{icon}",
-        "format-active": " {icon} ",
-        "on-click": "activate"
-        // "format-icons":{
-        //     "10":"10"
-        // }
-    },
-    "custom/clock": {
-        "exec": "date +' %D  %H:%M:%S'",
-        "interval": 1
-    },
-    "hyprland/language": {
-        "min-length": 8,
-        "format": "  {}",
-        "format-en": "US",
-        "format-sv": "SE",
-        "keyboard-name": "at-translated-set-2-keyboard",
-        "interval": 1
-    },
-    "cpu": {
-        "interval": 15,
-        "format": " {}%",
-        "max-length": 10
-    },
-    "memory": {
-        "interval": 30,
-        "format": " {}%",
-        "max-length": 10
-    },
-    "custom/spotify": {
-        "exec": "playerctl --player=spotify,youtube,netflix metadata --format '{{artist}} - {{title}}'",
-        "format": "  {}",
-        "interval": 1,
-        "on-click": "playerctl --player=spotify,youtube,netflix play-pause",
-        "on-scroll-up": "playerctl --player=spotify,youtube,netflix next",
-        "on-scroll-down": "playerctl --player=spotify,youtube,netflix previous"
-    },
-    "custom/media": {
-        "interval": 30,
-        "format": "{icon} {}",
-        "return-type": "json",
-        "max-length": 20,
-        "format-icons": {
-            "spotify": " ",
-            "default": " "
-        },
-        "escape": true,
-        "exec": "$HOME/.config/system_scripts/mediaplayer.py 2> /dev/null",
-        "on-click": "playerctl play-pause"
-    },
-    "custom/launcher":{
-        "format": " ",
-        "on-click": "wofi",
-        "on-click-right": "killall wofi"
-    },
-    "custom/power":{
-        "format": " ",
-        "on-click": "bash ~/.config/rofi/leave/leave.sh",
-    },
-    "custom/updates":{
-        "format": "{} Update(s)",
-        "exec": "checkupdates | wc -l",
-        "exec-if": "[[ $(checkupdates | wc -l) != 0 ]]",
-        "interval": 15,
-        "on-click": "alacritty -e pacman -Syu && notify-send 'The system has been updated' "
-    },
-    "custom/wallpaper":{
-        "format":" ",
-        "on-click": "bash ~/.config/system_scripts/pkill_bc"
+  "pulseaudio": {
+    "tooltip": false,
+    "scroll-step": 5,
+    "format": "[ <span foreground='#9b5de5'>{icon} </span> ] <span foreground='#e0e0f0'>{volume}%</span>",
+    "format-muted": "[ <span foreground='#ff5252'>{icon} </span> ] <span foreground='#e0e0f0'>{volume}%</span>",
+    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+    "format-icons": {
+      "default": ["", "", " "]
     }
+  },
+
+  "river/tags": {
+    "num-tags": 6
+  },
+
+  "network": {
+    "tooltip": false,
+    "format-wifi": "[ <span foreground='#9b5de5'> </span> ] <span foreground='#e0e0f0'>{essid}</span>",
+    "format-ethernet": ""
+  },
+
+  "backlight": {
+    "tooltip": false,
+    "format": "[ <span foreground='#9b5de5'></span> ] <span foreground='#e0e0f0'>{}%</span>",
+    "interval": 1,
+    "on-scroll-up": "light -A 5",
+    "on-scroll-down": "light -U 5"
+  },
+
+  "battery": {
+    "states": {
+      "good": 95,
+      "warning": 30,
+      "critical": 20
+    },
+    "format": "[ <span foreground='#9b5de5'>{icon} </span>  ] <span foreground='#e0e0f0'>{capacity}%</span>",
+    "format-charging": "[ <span foreground='#4caf50'></span> ] <span foreground='#e0e0f0'>{capacity}%</span>",
+    "format-plugged": "[ <span foreground='#4caf50'></span> ] <span foreground='#e0e0f0'>{capacity}%</span>",
+    "format-alt": "[ <span foreground='#9b5de5'>{icon}</span>   ] <span foreground='#e0e0f0'>{time}</span>",
+    "format-icons": ["", "", "", "", ""]
+  },
+
+  "tray": {
+    "icon-size": 18,
+    "spacing": 10
+  },
+
+  "wlr/workspaces": {
+    "format": "{icon}",
+    "format-active": " {icon} ",
+    "on-click": "activate"
+  },
+
+"custom/clock": {
+  "exec": "date '+[ <span foreground=\"#9b5de5\"> </span> ] <span foreground=\"#e0e0f0\">%Y-%m-%d </span>[ <span foreground=\"#9b5de5\"> </span> ] <span foreground=\"#e0e0f0\">%I:%M:%S %p</span>'",
+  "interval": 1,
+  "escape": false
+},
+
+  "hyprland/language": {
+    "min-length": 8,
+    "format": "[ <span foreground='#9b5de5'> </span> ] <span foreground='#e0e0f0'>{}</span>",
+    "format-en": "US",
+    "format-sv": "SE",
+    "keyboard-name": "at-translated-set-2-keyboard",
+    "interval": 1
+  },
+
+  "cpu": {
+    "interval": 1,
+    "format": "[ <span foreground='#9b5de5'> </span> ] <span foreground='#e0e0f0'>{}%</span>",
+    "max-length": 10
+  },
+
+  "custom/memory": {
+    "interval": 5,
+    "exec": "~/.config/hypr/scripts/memory.sh",
+    "format": "[ <span foreground='#9b5de5'></span>  ] <span foreground='#e0e0f0'>{text}</span>"
+  },
+
+  "custom/spotify": {
+    "exec": "playerctl --player=spotify,youtube,netflix metadata --format '{{artist}} - {{title}}'",
+    "format": "[ <span foreground='#9b5de5'> </span> ] <span foreground='#e0e0f0'>{}</span>",
+    "interval": 1,
+    "on-click": "playerctl --player=spotify,youtube,netflix play-pause",
+    "on-scroll-up": "playerctl --player=spotify,youtube,netflix next",
+    "on-scroll-down": "playerctl --player=spotify,youtube,netflix previous"
+  },
+
+  "custom/media": {
+    "interval": 30,
+    "format": "<span foreground='#9b5de5'>{icon}</span> <span foreground='#e0e0f0'>{}</span>",
+    "return-type": "json",
+    "max-length": 20,
+    "format-icons": {
+      "spotify": " ",
+      "default": " "
+    },
+    "escape": true,
+    "exec": "$HOME/.config/system_scripts/mediaplayer.py 2> /dev/null",
+    "on-click": "playerctl play-pause"
+  },
+
+  "custom/launcher": {
+    "format": "<span foreground='#00c6ff'> </span>",
+    "on-click": "wofi",
+    "on-click-right": "killall wofi"
+  },
+
+  "custom/power": {
+    "format": "<span foreground='#ff5f6d'></span>",
+    "on-click": "bash ~/.config/rofi/leave/leave.sh"
+  },
+
+  "custom/updates": {
+    "format": "{} Update(s)",
+    "exec": "checkupdates | wc -l",
+    "exec-if": "[[ $(checkupdates | wc -l) != 0 ]]",
+    "interval": 15,
+    "on-click": "alacritty -e pacman -Syu && notify-send 'The system has been updated' "
+  },
+
+  "custom/wallpaper": {
+    "format": "<span foreground='#9b5de5'></span>",
+    "on-click": "bash ~/.config/system_scripts/pkill_bc"
+  }
 }

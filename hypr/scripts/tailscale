@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+
+# disable tailscale exit node on startup
+(sleep 5 && tailscale up --exit-node= --ssh >> ~/.tailscale-up.log 2>&1) &

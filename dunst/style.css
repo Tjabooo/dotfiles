@@ -1,0 +1,27 @@
+* {
+    font-family: "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
+    font-size: 14px;
+    border-radius: 12px;
+}
+
+#window {
+    background-color: #0f0f1e;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 10px rgba(20, 20, 40, 0.6);
+    padding: 10px 14px;
+}
+
+#urgency_low {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#urgency_normal {
+    border: 1px solid #9b5de5;
+    box-shadow: 0 0 6px rgba(160, 130, 255, 0.4);
+}
+
+#urgency_critical {
+    border: 1px solid #ff5252;
+    box-shadow: 0 0 8px rgba(255, 70, 70, 0.6);
+}
+

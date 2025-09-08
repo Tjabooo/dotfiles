@@ -21,10 +21,16 @@ swhks &
 swhkd &
 
 # effects
-$scripts/rgb &
+# $scripts/rgb &
 
 # power management
 $scripts/launch_hypridle &
+
+# tailscale management
+# $scripts/tailscale &
+
+# secret keyring
+$scripts/gnome-keyring &
 
 # other
 /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &

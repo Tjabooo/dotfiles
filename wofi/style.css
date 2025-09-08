@@ -1,0 +1,67 @@
+window {
+    font-family: "JetBrainsMono Nerd Font", "FiraCode Nerd Font Mono", monospace;
+    font-size: 14px;
+    border: none;
+    border-radius: 12px;
+    background-color: rgba(20, 20, 40, 0.85);
+    padding: 10px;
+}
+
+#input {
+    border: 1px solid rgba(160, 130, 255, 0.5);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.12);
+    padding: 10px 14px;
+    color: #f0f0ff;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    box-shadow: 0 0 8px rgba(160, 130, 255, 0.3);
+}
+
+#input:focus {
+    background-color: rgba(200, 180, 255, 0.18);
+    box-shadow: 0 0 10px rgba(180, 150, 255, 0.6);
+    outline: none;
+}
+
+#input > image.left {
+    color: #c6a0f6;
+    margin-right: 6px;
+}
+
+#input > image.right {
+    color: #f28fad;
+    margin-left: 6px;
+}
+
+#outer-box {
+    /*margin-bottom: 4px;*/
+    background-color: rgba(160, 130, 255, 0.1);
+}
+
+#scroll {
+    margin-right: 5px;
+}
+
+#entry {
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    color: #dcdcdc;
+    background: rgba(255, 255, 255, 0.05);
+    transition: background 200ms ease, box-shadow 200ms ease;
+    min-height: 40px;
+}
+
+#entry:selected {
+    color: #ffffff;
+    background: linear-gradient(135deg, #9b5de5, #71689a);
+    box-shadow: 0 0 6px rgba(200, 150, 255, 0.5);
+}
+
+#text {
+    margin-left: 8px;
+    font-size: 15px;
+    color: inherit;
+}

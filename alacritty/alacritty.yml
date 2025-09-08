@@ -45,8 +45,10 @@ cursor:
   style: 'Block'
 
 # def Shell
-#shell:
-#  program: /usr/bin/zsh
+shell:
+  program: /usr/bin/zsh
+  args:
+    - --login
 
 # Font stuff
 font:
@@ -82,3 +84,19 @@ mouse:
 # General config
 live_config_reload: true
 draw_bold_text_with_bright_colors: true
+
+# Colors
+colors:
+  primary:
+    background: '0x1e1e2e'
+    foreground: '0xcdd6f4'
+  normal:
+    black:   '0x45475a'
+    red:     '0xf38ba8'
+    green:   '0xa6e3a1'
+    yellow:  '0xf9e2af'
+    blue:    '0x89b4fa'
+    magenta: '0xf5c2e7'
+    cyan:    '0x94e2d5'
+    white:   '0xbac2de'
+

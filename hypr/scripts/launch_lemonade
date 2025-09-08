@@ -1,0 +1,4 @@
+#!/usr/bin/zsh
+source ~/.zshrc
+conda activate lemon
+lemonade-server-dev serve

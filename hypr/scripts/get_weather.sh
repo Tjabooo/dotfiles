@@ -17,7 +17,7 @@ case "$summary" in
   "cloudy"|"Cloudy") icon="☁️" ;;
   "overcast"|"Overcast") icon="☁️" ;;
   "fog"|"Fog") icon="🌫️" ;;
-  "rain"|"rain_shower") icon="🌧️" ;;
+  "rain"|"rain_shower"|"psbl_rain") icon="🌧️" ;;
   "snow") icon="❄️" ;;
   "storm") icon="⛈️" ;;
   *) icon="" ;;

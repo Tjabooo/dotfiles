@@ -5,7 +5,7 @@
 ///_/    \__,_/____/\__/\____/\__,_/\__/
 //  https://github.com/m3tozz/FastCat
 {
-  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "$schema": "~/.config/fastfetch/homerconf.json",
   "logo": {
     "source": "~/.config/fastfetch/homer.txt",
     "color": {
