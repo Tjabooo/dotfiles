@@ -11,7 +11,7 @@ The desktop lives in `Tjabooo/dotfiles-desktop` ("ember"); this one is for media
 | `vesktop/themes/` | `~/.config/vesktop/themes/` (Vesktop) and `~/.config/Vencord/themes/` (Discord + Vencord) |
 | `mimeapps.list` | `~/.config/mimeapps.list` |
 | `homedir/.zshrc .bashrc .bash_profile` | `~/` |
-| `homedir/.local/bin/neon-*` | `~/.local/bin/` |
+| `homedir/.local/bin/neon-*`, `homedir/.local/bin/codex` | `~/.local/bin/` |
 | `homedir/.local/share/neon/` | `~/.local/share/neon/` (system-fixes.sh, GRUB theme builder, 10_neon source) |
 | `system/etc/…`, `system/usr/local/bin/…` | the same paths under `/` (root-owned; copy with sudo) |
 
@@ -55,6 +55,17 @@ cp vesktop/themes/neon.theme.css ~/.config/Vencord/themes/
 In Discord/Vesktop, select Dark appearance and enable **midnight neon** under
 **Settings → Vencord → Themes → Local Themes**. Only the theme is versioned here;
 keep account and plugin settings local. Hyprland already provides window opacity/blur.
+
+## Codex over SSH
+
+`homedir/.local/bin/codex` exposes the desktop app's bundled CLI from
+`/usr/lib/chatgpt/resources/codex` to SSH login shells. Install the desktop app,
+copy the launcher to `~/.local/bin/`, and sign in once through the app.
+Verify with `ssh arch-laptop 'PATH="$HOME/.local/bin:$PATH"; codex --version'`.
+
+The home network's Windows host uses the separate `home-server-codex` SSH alias;
+its compatibility bridge is maintained in `home-network/codex-remote` on home-server.
+SSH keys and account credentials stay outside this repository.
 
 ## Boot: GRUB + Secure Boot (sbctl, no shim)
 
