@@ -8,6 +8,7 @@ The desktop lives in `Tjabooo/dotfiles-desktop` ("ember"); this one is for media
 | repo path | goes to |
 |---|---|
 | `alacritty/ dunst/ fastfetch/ hypr/ mpv/ neon/ ohmyposh/ pacman/ satty/ systemd/ waybar/ wofi/ zed/` | `~/.config/<same>` |
+| `vesktop/themes/` | `~/.config/vesktop/themes/` (Vesktop) and `~/.config/Vencord/themes/` (Discord + Vencord) |
 | `mimeapps.list` | `~/.config/mimeapps.list` |
 | `homedir/.zshrc .bashrc .bash_profile` | `~/` |
 | `homedir/.local/bin/neon-*` | `~/.local/bin/` |
@@ -37,6 +38,23 @@ units, so they restart when they crash and log to `journalctl --user -u <name>`.
   into Windows (GRUB or systemd-boot, whichever booted).
 - **House dot** (waybar `custom/house`): home server health from Marquee's House tab via
   `marquee-house` (lives in the marquee repo, `agents/`); hidden away from home or when not installed.
+
+## Discord / Vesktop theme
+
+`vesktop/themes/neon.theme.css` adapts the desktop's Ember layout to this laptop's
+midnight neon palette: navy panels, violet/pink accents, lavender text, JetBrainsMono
+and 12px panel corners. It uses [midnight by refact0r](https://github.com/refact0r/midnight-discord)
+as its base; the laptop currently runs Discord with Vencord.
+
+```sh
+mkdir -p ~/.config/vesktop/themes ~/.config/Vencord/themes
+cp vesktop/themes/neon.theme.css ~/.config/vesktop/themes/
+cp vesktop/themes/neon.theme.css ~/.config/Vencord/themes/
+```
+
+In Discord/Vesktop, select Dark appearance and enable **midnight neon** under
+**Settings → Vencord → Themes → Local Themes**. Only the theme is versioned here;
+keep account and plugin settings local. Hyprland already provides window opacity/blur.
 
 ## Boot: GRUB + Secure Boot (sbctl, no shim)
 

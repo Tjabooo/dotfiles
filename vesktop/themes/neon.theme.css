@@ -1,0 +1,135 @@
+/**
+ * @name midnight neon
+ * @description unit-01's navy, violet and pink palette, adapted from Ember. Built on midnight by refact0r.
+ * @author Oliver Westin
+ * @version 1.0.0
+ * @source https://github.com/refact0r/midnight-discord
+ */
+
+/* Use Discord's Dark appearance. The base theme supplies the panel layout. */
+@import url('https://refact0r.github.io/midnight-discord/build/midnight.css');
+
+body {
+    --font: 'JetBrainsMono Nerd Font';
+    --code-font: 'JetBrainsMono Nerd Font';
+    font-weight: 400;
+
+    /* Ember's compact layout, with the laptop's rounded islands. */
+    --gap: 10px;
+    --divider-thickness: 3px;
+    --border-thickness: 1px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 12px;
+
+    --animations: on;
+    --list-item-transition: 0.2s ease;
+    --dms-icon-svg-transition: 0.4s ease;
+    --border-hover-transition: 0.2s ease;
+
+    --top-bar-height: var(--gap);
+    --top-bar-button-position: titlebar;
+    --top-bar-title-position: off;
+    --subtle-top-bar-title: off;
+    --custom-window-controls: off;
+    --window-control-size: 14px;
+
+    /* Same violet-to-pink gradient as Waybar's launcher and workspaces. */
+    --custom-dms-icon: custom;
+    --dms-icon-svg-url: url('https://refact0r.github.io/midnight-discord/assets/Font_Awesome_5_solid_moon.svg');
+    --dms-icon-svg-size: 85%;
+    --dms-icon-color-before: var(--text-1);
+    --dms-icon-color-after: var(--text-1);
+    --custom-dms-background: color;
+    --dms-background-image-url: url('');
+    --dms-background-image-size: cover;
+    --dms-background-color: linear-gradient(135deg, #9b5de5, #f15bb5);
+
+    /* Hyprland already applies window opacity and blur to Discord/Vesktop. */
+    --background-image: off;
+    --background-image-url: url('');
+    --transparency-tweaks: off;
+    --remove-bg-layer: off;
+    --panel-blur: off;
+    --blur-amount: 12px;
+    --bg-floating: var(--bg-3);
+
+    --custom-chatbar: off;
+    --chatbar-height: 47px;
+    --small-user-panel: on;
+}
+
+:root {
+    --colors: on;
+
+    /* Palette shared with neon/eww, Waybar, Dunst and Alacritty. */
+    --text-0: #0f0f1e;
+    --text-1: #ffffff;
+    --text-2: #e0e0f0;
+    --text-3: #e0e0f0;
+    --text-4: #9d9dbf;
+    --text-5: #6c6c8a;
+
+    --bg-1: #2a2a45;
+    --bg-2: #1a1a2f;
+    --bg-3: #0f0f1e;
+    --bg-4: #1a1a2f;
+    --hover: rgba(155, 93, 229, 0.10);
+    --active: rgba(155, 93, 229, 0.18);
+    --active-2: rgba(155, 93, 229, 0.26);
+    --message-hover: rgba(15, 15, 30, 0.25);
+
+    /* Lavender links, pink unread markers, violet buttons. */
+    --accent-1: #babbf1;
+    --accent-2: #f15bb5;
+    --accent-3: #9b5de5;
+    --accent-4: #ac78eb;
+    --accent-5: #8a4dd2;
+    --accent-new: var(--red-2);
+    --mention: linear-gradient(to right, rgba(241, 91, 181, 0.12) 40%, transparent);
+    --mention-hover: linear-gradient(to right, rgba(241, 91, 181, 0.18) 40%, transparent);
+    --reply: linear-gradient(to right, rgba(186, 187, 241, 0.10) 40%, transparent);
+    --reply-hover: linear-gradient(to right, rgba(186, 187, 241, 0.16) 40%, transparent);
+
+    --online: var(--green-2);
+    --dnd: var(--red-2);
+    --idle: var(--yellow-2);
+    --streaming: var(--purple-3);
+    --offline: var(--text-4);
+
+    --border-light: rgba(186, 187, 241, 0.10);
+    --border: #2a2a45;
+    --border-hover: rgba(155, 93, 229, 0.45);
+    --button-border: rgba(186, 187, 241, 0.14);
+
+    /* Terminal colors retain recognizable success, warning and error states. */
+    --red-1: #ff8fa3;
+    --red-2: #ff6b81;
+    --red-3: #ff6b81;
+    --red-4: #f15b73;
+    --red-5: #dc4b63;
+
+    --green-1: #a5d6a7;
+    --green-2: #81c784;
+    --green-3: #81c784;
+    --green-4: #6ab46d;
+    --green-5: #56a35a;
+
+    --blue-1: #a9bdff;
+    --blue-2: #8aa8ff;
+    --blue-3: #8aa8ff;
+    --blue-4: #7695ef;
+    --blue-5: #6381da;
+
+    --yellow-1: #ffd89b;
+    --yellow-2: #ffc371;
+    --yellow-3: #ffc371;
+    --yellow-4: #edaf5d;
+    --yellow-5: #d69b4b;
+
+    --purple-1: #babbf1;
+    --purple-2: #f15bb5;
+    --purple-3: #9b5de5;
+    --purple-4: #ac78eb;
+    --purple-5: #8a4dd2;
+}
