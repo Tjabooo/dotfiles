@@ -1,4 +1,4 @@
-# dotfiles · magi (laptop)
+# dotfiles · unit-01 (laptop)
 
 Hyprland rice for an ASUS Zenbook S 16 (Ryzen AI 9 HX 370 / Radeon 890M), "midnight neon" palette.
 The desktop lives in `Tjabooo/dotfiles-desktop` ("ember"); this one is for media + development.

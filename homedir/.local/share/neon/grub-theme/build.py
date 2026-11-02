@@ -103,7 +103,7 @@ def background():
     # header
     text(d, (120, 112), "MAGI", font("ExtraBold", 64), VIOLET, "ls")
     text(d, (330, 104), "SYSTEM  ·  BOOT ARBITRATION", font("Regular", 22), DIM, "ls")
-    text(d, (2440, 92), "NEON // magi", font("Bold", 24), FG, "rs")
+    text(d, (2440, 92), "NEON // unit-01", font("Bold", 24), FG, "rs")
     text(d, (2440, 124), "SECURE BOOT · SBCTL CHAIN VERIFIED", font("Regular", 18), DIM, "rs")
     d.line((120, 150, 2440, 150), fill=LINE, width=2)
     d.line((120, 150, 300, 150), fill=VIOLET, width=4)
