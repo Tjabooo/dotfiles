@@ -1,49 +1,81 @@
+# ~/.config/dunst/dunstrc  —  "midnight neon"
 [global]
     monitor = 0
     follow = mouse
     origin = top-right
-    offset = (20, 60)
-    shrink = yes
-    transparency = 0
-    frame_color = "#9b5de5"
-    frame_width = 2
-    separator_height = 2
-    separator_color = auto
-    padding = 12
-    horizontal_padding = 16
-    text_icon_padding = 8
-    line_height = 0
+    offset = 14x56
+    width = 380
+    height = 220
+    gap_size = 6
+    notification_limit = 5
+
+    font = JetBrainsMono Nerd Font 11
     markup = full
-    format = "<b>%s</b>\n<span foreground='#e0e0f0'>%b</span>"
-    sort = yes
-    indicate_hidden = yes
+    format = "<b>%s</b>\n<span foreground='#babbf1'>%b</span>"
+    alignment = left
     word_wrap = yes
     ignore_newline = no
-    show_indicators = no
+
+    padding = 12
+    horizontal_padding = 16
+    text_icon_padding = 12
+    frame_width = 2
+    corner_radius = 12
+    icon_corner_radius = 8
+    separator_height = 2
+    separator_color = frame
     min_icon_size = 32
-    max_icon_size = 64
-    browser = firefox
+    max_icon_size = 56
     icon_position = left
+
+    progress_bar = true
+    progress_bar_height = 8
+    progress_bar_frame_width = 0
+    progress_bar_corner_radius = 4
+    highlight = "#f15bb5"
+
+    sort = yes
+    indicate_hidden = yes
+    show_indicators = no
     sticky_history = yes
-    history_length = 20
-    mouse_left_click = close_current
-    mouse_right_click = close_all
-    mouse_middle_click = do_action
+    history_length = 30
+    # away from the keyboard for 2 min: notifications stay until you're back
+    idle_threshold = 120
+    dmenu = /usr/bin/wofi --dmenu --prompt dunst
+    browser = /usr/bin/xdg-open
+
+    # left click opens it (e.g. jumps to the Discord message)
+    mouse_left_click = do_action, close_current
+    mouse_middle_click = close_all
+    mouse_right_click = close_current
 
 [urgency_low]
-    background = "#1a1a2f"
+    background = "#1a1a2fee"
     foreground = "#e0e0f0"
-    frame_color = "#444"
+    frame_color = "#2a2a45"
     timeout = 4
 
 [urgency_normal]
-    background = "#0f0f1e"
+    background = "#0f0f1eee"
     foreground = "#e0e0f0"
     frame_color = "#9b5de5"
     timeout = 8
 
 [urgency_critical]
-    background = "#0f0f1e"
+    background = "#0f0f1eee"
     foreground = "#ffffff"
     frame_color = "#ff5252"
+    highlight = "#ff5252"
     timeout = 0
+
+# volume / brightness / mic bars from neon-osd: small, quick, never in history
+[neon-osd]
+    appname = neon-osd
+    history_ignore = yes
+    timeout = 1.2
+    format = "<b>%s</b>"
+
+# keep game/launcher spam quiet
+[steam]
+    appname = Steam
+    urgency = low

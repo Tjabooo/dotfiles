@@ -1,6 +1,11 @@
-@import ".config/wofi/style.css";
+/* wofi-wifi-menu: reuse the main theme, just tighter */
+@import url("style.css");
+
 window {
-    font-family: "FiraCode Nerd Font Mono";
+    font-family: "JetBrainsMono Nerd Font", monospace;
     font-size: 13px;
-    background: white;
+}
+
+#entry {
+    min-height: 30px;
 }

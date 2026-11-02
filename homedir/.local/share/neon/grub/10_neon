@@ -1,0 +1,37 @@
+#!/bin/sh
+# /etc/grub.d/10_neon — replaces GRUB's stock 10_linux (moved away, kept out by pacman's
+# NoExtract) so the menu is exactly:  Arch Linux · Windows 11 · UEFI Firmware Settings
+# (no "Advanced options" submenu). Windows chainloads the sbctl-signed copy on this ESP: the
+# firmware only trusts your own key, so Microsoft's own loader would be refused.
+#
+# Only knows the stock `linux` kernel. Installing another one (linux-lts, linux-zen) needs an
+# entry added here.
+set -e
+. "$pkgdatadir/grub-mkconfig_lib"
+
+ROOT_UUID=$(${grub_probe} --target=fs_uuid --device "${GRUB_DEVICE}")
+BOOT_UUID=$(${grub_probe} --target=fs_uuid --device "${GRUB_DEVICE_BOOT}")
+# /boot is its own partition (the ESP), so paths are relative to it
+ucode=""; [ -f /boot/amd-ucode.img ] && ucode="/amd-ucode.img "
+
+gettext_printf "Found Arch + Windows entries (10_neon)\n" >&2
+cat <<EOF
+menuentry 'Arch Linux' --class arch --class gnu-linux --class gnu --class os \$menuentry_id_option 'gnulinux-simple-${ROOT_UUID}' {
+	load_video
+	set gfxpayload=keep
+	insmod gzio
+	insmod part_gpt
+	insmod fat
+	search --no-floppy --fs-uuid --set=root ${BOOT_UUID}
+	echo	'Loading Linux ...'
+	linux	/vmlinuz-linux root=UUID=${ROOT_UUID} rw ${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}
+	echo	'Loading initial ramdisk ...'
+	initrd	${ucode}/initramfs-linux.img
+}
+menuentry 'Windows 11' --class windows --class os \$menuentry_id_option 'windows-11' {
+	insmod part_gpt
+	insmod fat
+	search --no-floppy --fs-uuid --set=root ${BOOT_UUID}
+	chainloader /EFI/WindowsChain/bootmgfw.efi
+}
+EOF

@@ -1,0 +1,74 @@
+# dotfiles · magi (laptop)
+
+Hyprland rice for an ASUS Zenbook S 16 (Ryzen AI 9 HX 370 / Radeon 890M), "midnight neon" palette.
+The desktop lives in `Tjabooo/dotfiles-desktop` ("ember"); this one is for media + development.
+
+## Layout
+
+| repo path | goes to |
+|---|---|
+| `alacritty/ dunst/ fastfetch/ hypr/ mpv/ ohmyposh/ pacman/ satty/ systemd/ waybar/ wofi/ zed/` | `~/.config/<same>` |
+| `mimeapps.list` | `~/.config/mimeapps.list` |
+| `homedir/.zshrc .bashrc .bash_profile` | `~/` |
+| `homedir/.local/bin/neon-*` | `~/.local/bin/` |
+| `homedir/.local/share/neon/` | `~/.local/share/neon/` (system-fixes.sh, GRUB theme builder, 10_neon source) |
+| `system/etc/…`, `system/usr/local/bin/…` | the same paths under `/` (root-owned; copy with sudo) |
+
+## How the session starts
+
+`hypr/hyprland.lua` (Hyprland 0.55+ Lua config) runs `systemctl --user restart neon-session.target`
+on start and stops it on shutdown. That target `BindsTo=graphical-session.target` and pulls in
+waybar, dunst, hypridle, hyprpaper, cliphist, hyprpolkitagent and neon-power as normal user
+units, so they restart when they crash and log to `journalctl --user -u <name>`.
+(`hypr/autostart` is the old launcher script and is no longer used.)
+
+## Laptop extras
+
+- **neon-power**: on plug / unplug it reloads Hyprland; `hyprland.lua` reads `AC0/online`
+  when it loads → 120 Hz + full blur/shadows on AC, 60 Hz + light blur on battery.
+  Low-battery notifications at 15 % and 7 %.
+- **hypridle**: dim (restores *your* brightness) → lock → screen off → suspend on battery only.
+- **neon-osd**: volume / brightness / mic keys with an on-screen bar (dunst).
+- **neon-shot**: Print-key screenshots via hyprshot → satty; `SUPER+Print` re-edits the last one.
+- **neon-update** (`update`): Arch news → `yay -Syu` → .pacnew → orphans → reboot hint.
+- **neon-keys** (`SUPER+/`): cheat sheet built from the `-- comments` on the binds in hyprland.lua.
+- Power menu (`SUPER+Escape`) can do a one-shot reboot into Windows (GRUB or systemd-boot,
+  whichever booted).
+
+## Boot: GRUB + Secure Boot (sbctl, no shim)
+
+The firmware trusts only the sbctl key (no Microsoft CA), so there's no shim/MOK like on the
+desktop: GRUB itself is signed with the sbctl key.
+
+- `system/usr/local/bin/grub-install-signed`: grub-install with every module built in (Secure
+  Boot lockdown can't load modules from disk), sbctl sign, grub-mkconfig. Run again by
+  `system/etc/pacman.d/hooks/90-grub-signed.hook` on every grub upgrade; sbctl's own hook re-signs
+  kernels.
+- Menu = **Arch Linux · Windows 11 · UEFI Firmware Settings**. `system/etc/grub.d/10_neon`
+  replaces the stock `10_linux` (which always adds "Advanced options"); `NoExtract =
+  etc/grub.d/10_linux` in pacman.conf keeps upgrades from bringing it back. It only knows the
+  stock `linux` kernel: add an entry there if you install another one.
+- Windows chainloads the **sbctl-signed** copy at `/EFI/WindowsChain/bootmgfw.efi`
+  (Microsoft's own loader would be refused). os-prober is off.
+- Theme "magi-neon": `homedir/.local/share/neon/grub-theme/build.py` (port of the desktop's ember
+  "magi" theme, midnight neon, drawn for 2880x1800). Rebuild + install:
+  `python3 build.py && sudo cp -r magi-neon /boot/grub/themes/ && sudo grub-mkconfig -o /boot/grub/grub.cfg`
+- `grub-promote.service`: one-shot, moved GRUB to the front of the firmware boot order after its
+  first successful boot (done; it disabled itself). systemd-boot stays installed as the fallback.
+
+![GRUB theme](homedir/.local/share/neon/grub-theme/preview.png)
+
+## Install on a fresh machine
+
+```sh
+for d in alacritty dunst fastfetch hypr mpv ohmyposh pacman satty systemd waybar wofi zed; do
+  mkdir -p ~/.config/$d && cp -r $d/. ~/.config/$d/
+done
+cp mimeapps.list ~/.config/
+cp -r homedir/. ~/
+systemctl --user daemon-reload
+# packages the config expects:
+sudo pacman -S --needed hyprland hyprlock hypridle hyprpaper hyprshot hyprpolkitagent \
+  xdg-desktop-portal-hyprland waybar dunst wofi satty cliphist wl-clipboard brightnessctl \
+  playerctl pacman-contrib zoxide pkgfile alacritty kitty yazi mpv ttf-jetbrains-mono-nerd
+```

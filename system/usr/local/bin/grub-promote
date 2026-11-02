@@ -1,0 +1,13 @@
+#!/bin/sh
+# grub-promote: one-shot, run at boot by grub-promote.service. If THIS boot came through the
+# GRUB firmware entry (i.e. GRUB + the signed kernel worked under Secure Boot), move GRUB to the
+# front of the boot order and disable itself. If GRUB had failed you'd be on systemd-boot and
+# nothing changes.
+set -e
+num=$(efibootmgr | sed -n 's/^Boot\([0-9A-F]\{4\}\)\* GRUB\b.*/\1/p' | head -1)
+cur=$(efibootmgr | sed -n 's/^BootCurrent: //p')
+[ -n "$num" ] && [ "$cur" = "$num" ] || { echo "booted via $cur, not GRUB ($num): leaving boot order alone"; exit 0; }
+order=$(efibootmgr | sed -n 's/^BootOrder: //p' | tr ',' '\n' | grep -vx "$num" | paste -sd,)
+efibootmgr --bootorder "$num,$order" >/dev/null
+echo "GRUB (Boot$num) worked: it is now first in the boot order"
+systemctl disable grub-promote.service

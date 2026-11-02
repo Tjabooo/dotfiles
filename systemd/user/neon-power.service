@@ -1,0 +1,9 @@
+[Unit]
+Description=neon-power: AC/battery profile switch + low-battery warnings
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/neon-power
+Restart=on-failure
+RestartSec=5

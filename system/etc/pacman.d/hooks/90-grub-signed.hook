@@ -1,0 +1,11 @@
+[Trigger]
+Type = Package
+Operation = Install
+Operation = Upgrade
+Target = grub
+
+[Action]
+Description = Reinstalling + signing GRUB (sbctl, no shim)...
+When = PostTransaction
+Exec = /usr/local/bin/grub-install-signed
+Depends = sbctl

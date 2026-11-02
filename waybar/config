@@ -1,136 +1,140 @@
+// ~/.config/waybar/config  —  floating "islands" layout
 {
   "layer": "top",
-  "modules-left": ["custom/launcher", "cpu", "custom/memory", "custom/media", "custom/spotify"],
-  "modules-center": ["river/tags", "wlr/workspaces", "custom/clock"],
-  "modules-right": ["custom/updates", "backlight", "pulseaudio", "hyprland/language", "network", "battery"],
-  "margin-top": 10,
-  "margin-left": 10,
-  "margin-right": 10,
+  "position": "top",
+  "height": 34,
+  "margin-top": 8,
+  "margin-left": 12,
+  "margin-right": 12,
+  "spacing": 0,
+  "reload_style_on_change": true,
 
-  "pulseaudio": {
+  "modules-left":   ["custom/launcher", "hyprland/workspaces", "mpris"],
+  "modules-center": ["clock"],
+  "modules-right":  ["custom/updates", "tray", "idle_inhibitor", "group/stats",
+                     "backlight", "pulseaudio", "hyprland/language", "network",
+                     "battery", "custom/power"],
+
+  "custom/launcher": {
+    "format": "",
     "tooltip": false,
-    "scroll-step": 5,
-    "format": "[ <span foreground='#9b5de5'>{icon} </span> ] <span foreground='#e0e0f0'>{volume}%</span>",
-    "format-muted": "[ <span foreground='#ff5252'>{icon} </span> ] <span foreground='#e0e0f0'>{volume}%</span>",
-    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
-    "format-icons": {
-      "default": ["", "", " "]
+    "on-click": "wofi --show drun",
+    "on-click-right": "pkill wofi"
+  },
+
+  "hyprland/workspaces": {
+    "format": "{name}",
+    "show-special": true,
+    "persistent-workspaces": { "*": 5 },
+    "on-scroll-up": "hyprctl dispatch workspace e-1",
+    "on-scroll-down": "hyprctl dispatch workspace e+1"
+  },
+
+  "mpris": {
+    "format": "<span color='#9b5de5'>{player_icon}</span>  {dynamic}",
+    "format-paused": "<span color='#6c6c8a'>{status_icon}</span>  <i>{dynamic}</i>",
+    "dynamic-order": ["title", "artist"],
+    "dynamic-len": 32,
+    "player-icons": { "default": "󰎆", "spotify": "", "firefox": "" },
+    "status-icons": { "paused": "" },
+    "on-click": "playerctl play-pause",
+    "on-scroll-up": "playerctl next",
+    "on-scroll-down": "playerctl previous"
+  },
+
+  "clock": {
+    "format": "<span color='#9b5de5'></span>  {:%H:%M}",
+    "format-alt": "<span color='#9b5de5'></span>  {:%a %d %b  %H:%M:%S}",
+    "interval": 1,
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "weeks-pos": "left",
+      "format": {
+        "months":   "<span color='#babbf1'><b>{}</b></span>",
+        "weeks":    "<span color='#6c6c8a'>W{}</span>",
+        "weekdays": "<span color='#9b5de5'><b>{}</b></span>",
+        "today":    "<span color='#f15bb5'><b><u>{}</u></b></span>"
+      }
     }
   },
 
-  "river/tags": {
-    "num-tags": 6
+  "custom/updates": {
+    "exec": "~/.config/waybar/scripts/updates.sh",   // cached + locked; needs pacman-contrib
+    "format": "<span color='#f15bb5'>󰚰</span>  {}",
+    "interval": 1800,
+    "signal": 8,
+    "tooltip": false,
+    "on-click": "alacritty -e sh -c '~/.local/bin/neon-update; printf \"\\npress Enter to close \"; read _'"
   },
 
-  "network": {
-    "tooltip": false,
-    "format-wifi": "[ <span foreground='#9b5de5'> </span> ] <span foreground='#e0e0f0'>{essid}</span>",
-    "format-ethernet": ""
+  "tray": { "icon-size": 16, "spacing": 10 },
+
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": { "activated": "", "deactivated": "" },
+    "tooltip-format-activated": "Staying awake",
+    "tooltip-format-deactivated": "Normal idle"
+  },
+
+  "group/stats": {
+    "orientation": "inherit",
+    "drawer": { "transition-duration": 300, "transition-left-to-right": false },
+    "modules": ["cpu", "memory"]
+  },
+  "cpu":    { "interval": 2, "format": "<span color='#9b5de5'></span>  {usage}%" },
+  "memory": {
+    "interval": 5,
+    "format": "<span color='#9b5de5'>󰍛</span>  {used:0.1f}G",
+    "tooltip-format": "{used:0.1f}G / {total:0.1f}G used"
   },
 
   "backlight": {
+    "format": "<span color='#9b5de5'></span>  {percent}%",
     "tooltip": false,
-    "format": "[ <span foreground='#9b5de5'></span> ] <span foreground='#e0e0f0'>{}%</span>",
-    "interval": 1,
-    "on-scroll-up": "light -A 5",
-    "on-scroll-down": "light -U 5"
+    "on-scroll-up": "brightnessctl -q set 5%+",
+    "on-scroll-down": "brightnessctl -q --min-value=1% set 5%-"
+  },
+
+  "pulseaudio": {
+    "format": "<span color='#9b5de5'>{icon}</span>  {volume}%",
+    "format-muted": "<span color='#ff5252'>󰝟</span>  muted",
+    "format-icons": { "default": ["", "", ""] },
+    "scroll-step": 5,
+    "tooltip": false,
+    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+    "on-click-right": "pavucontrol"
+  },
+
+  "hyprland/language": {
+    "format": "<span color='#9b5de5'></span>  {}",
+    "format-en": "US",
+    "format-sv": "SE",
+    "keyboard-name": "at-translated-set-2-keyboard"
+  },
+
+  "network": {
+    "format-wifi": "<span color='#9b5de5'></span>  {essid}",
+    "format-ethernet": "<span color='#9b5de5'>󰈀</span>  wired",
+    "format-disconnected": "<span color='#ff5252'>󰤭</span>  offline",
+    "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}",
+    "tooltip-format-ethernet": "{ifname}\n{ipaddr}",
+    "max-length": 22
   },
 
   "battery": {
-    "states": {
-      "good": 95,
-      "warning": 30,
-      "critical": 20
-    },
-    "format": "[ <span foreground='#9b5de5'>{icon} </span>  ] <span foreground='#e0e0f0'>{capacity}%</span>",
-    "format-charging": "[ <span foreground='#4caf50'></span> ] <span foreground='#e0e0f0'>{capacity}%</span>",
-    "format-plugged": "[ <span foreground='#4caf50'></span> ] <span foreground='#e0e0f0'>{capacity}%</span>",
-    "format-alt": "[ <span foreground='#9b5de5'>{icon}</span>   ] <span foreground='#e0e0f0'>{time}</span>",
-    "format-icons": ["", "", "", "", ""]
-  },
-
-  "tray": {
-    "icon-size": 18,
-    "spacing": 10
-  },
-
-  "wlr/workspaces": {
-    "format": "{icon}",
-    "format-active": " {icon} ",
-    "on-click": "activate"
-  },
-
-"custom/clock": {
-  "exec": "date '+[ <span foreground=\"#9b5de5\"> </span> ] <span foreground=\"#e0e0f0\">%Y-%m-%d </span>[ <span foreground=\"#9b5de5\"> </span> ] <span foreground=\"#e0e0f0\">%I:%M:%S %p</span>'",
-  "interval": 1,
-  "escape": false
-},
-
-  "hyprland/language": {
-    "min-length": 8,
-    "format": "[ <span foreground='#9b5de5'> </span> ] <span foreground='#e0e0f0'>{}</span>",
-    "format-en": "US",
-    "format-sv": "SE",
-    "keyboard-name": "at-translated-set-2-keyboard",
-    "interval": 1
-  },
-
-  "cpu": {
-    "interval": 1,
-    "format": "[ <span foreground='#9b5de5'> </span> ] <span foreground='#e0e0f0'>{}%</span>",
-    "max-length": 10
-  },
-
-  "custom/memory": {
-    "interval": 5,
-    "exec": "~/.config/hypr/scripts/memory.sh",
-    "format": "[ <span foreground='#9b5de5'></span>  ] <span foreground='#e0e0f0'>{text}</span>"
-  },
-
-  "custom/spotify": {
-    "exec": "playerctl --player=spotify,youtube,netflix metadata --format '{{artist}} - {{title}}'",
-    "format": "[ <span foreground='#9b5de5'> </span> ] <span foreground='#e0e0f0'>{}</span>",
-    "interval": 1,
-    "on-click": "playerctl --player=spotify,youtube,netflix play-pause",
-    "on-scroll-up": "playerctl --player=spotify,youtube,netflix next",
-    "on-scroll-down": "playerctl --player=spotify,youtube,netflix previous"
-  },
-
-  "custom/media": {
-    "interval": 30,
-    "format": "<span foreground='#9b5de5'>{icon}</span> <span foreground='#e0e0f0'>{}</span>",
-    "return-type": "json",
-    "max-length": 20,
-    "format-icons": {
-      "spotify": " ",
-      "default": " "
-    },
-    "escape": true,
-    "exec": "$HOME/.config/system_scripts/mediaplayer.py 2> /dev/null",
-    "on-click": "playerctl play-pause"
-  },
-
-  "custom/launcher": {
-    "format": "<span foreground='#00c6ff'> </span>",
-    "on-click": "wofi",
-    "on-click-right": "killall wofi"
+    "states": { "warning": 30, "critical": 15 },
+    "format": "<span color='#9b5de5'>{icon}</span>  {capacity}%",
+    "format-charging": "<span color='#81c784'>󰂄</span>  {capacity}%",
+    "format-plugged": "<span color='#81c784'></span>  {capacity}%",
+    "format-alt": "<span color='#9b5de5'>{icon}</span>  {time}",
+    "format-icons": ["", "", "", "", ""],
+    "tooltip-format": "{timeTo}  ·  {power:0.1f}W"
   },
 
   "custom/power": {
-    "format": "<span foreground='#ff5f6d'></span>",
-    "on-click": "bash ~/.config/rofi/leave/leave.sh"
-  },
-
-  "custom/updates": {
-    "format": "{} Update(s)",
-    "exec": "checkupdates | wc -l",
-    "exec-if": "[[ $(checkupdates | wc -l) != 0 ]]",
-    "interval": 15,
-    "on-click": "alacritty -e pacman -Syu && notify-send 'The system has been updated' "
-  },
-
-  "custom/wallpaper": {
-    "format": "<span foreground='#9b5de5'></span>",
-    "on-click": "bash ~/.config/system_scripts/pkill_bc"
+    "format": "",
+    "tooltip": false,
+    "on-click": "~/.config/waybar/scripts/power-menu.sh"
   }
 }

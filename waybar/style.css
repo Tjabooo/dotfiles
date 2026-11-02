@@ -1,158 +1,208 @@
+/* ~/.config/waybar/style.css  —  "midnight neon" */
+
+@define-color base     #0f0f1e;
+@define-color surface  #1a1a2f;
+@define-color overlay  #2a2a45;
+@define-color text     #e0e0f0;
+@define-color subtext  #9d9dbf;
+@define-color muted    #6c6c8a;
+@define-color violet   #9b5de5;
+@define-color pink     #f15bb5;
+@define-color lavender #babbf1;
+@define-color cyan     #00c6ff;
+@define-color green    #81c784;
+@define-color amber    #ffc371;
+@define-color red      #ff5252;
+
 * {
+    font-family: "JetBrainsMono Nerd Font", "Font Awesome 6 Free", "Noto Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
     border: none;
-    /* border-radius: 12px; */
-    font-family: "JetBrainsMono Nerd Font", "Material Design Icons", "Font Awesome 6 Free", "Noto Sans", sans-serif;
-    font-size: 14px;
-    min-height: 20px;
-    margin-left: 4px;
-    margin-right: 6px;
+    border-radius: 0;
+    min-height: 0;
+    box-shadow: none;
+    text-shadow: none;
 }
 
 window#waybar {
-    background: #0f0f1e;
-    border-radius: 12px;
-    padding: 6px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: all 200ms ease-in-out;
-    box-shadow: 0 0 10px rgba(20, 20, 40, 0.6);
+    background: transparent;
+    color: @text;
 }
 
 window#waybar.hidden {
     opacity: 0.2;
 }
 
-#workspaces button,
-#tags button,
-#network,
-#pulseaudio,
-#language,
-#battery,
-#backlight,
-#custom-clock,
-#custom-memory,
-#custom-spotify,
-#cpu,
-#tray,
-#custom-launcher,
-#custom-power,
-#custom-wallpaper,
-#custom-updates,
-#custom-media {
-    padding: 4px 10px;
-    margin: 4px 6px;
+/* ── Islands ─────────────────────────────────────────────── */
+.modules-left,
+.modules-center,
+.modules-right {
+    background: alpha(@base, 0.82);
+    border: 1px solid alpha(@lavender, 0.14);
+    border-radius: 14px;
+    padding: 0 4px;
+}
+
+/* ── Shared module look ──────────────────────────────────── */
+#custom-launcher, #workspaces, #mpris, #clock, #custom-updates, #tray,
+#idle_inhibitor, #cpu, #memory, #backlight, #pulseaudio, #language,
+#network, #battery, #custom-power {
+    padding: 0 10px;
+    margin: 5px 2px;
     border-radius: 10px;
-    color: #e0e0f0;
-    background: #1a1a2f;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: background 200ms ease, box-shadow 200ms ease, padding 150ms ease;
+    color: @text;
+    background: transparent;
+    transition: background 200ms ease, color 200ms ease;
 }
 
-#language {
-    padding: 4px 10px;
+#mpris:hover, #clock:hover, #custom-updates:hover, #idle_inhibitor:hover,
+#cpu:hover, #memory:hover, #backlight:hover, #pulseaudio:hover,
+#language:hover, #network:hover, #battery:hover {
+    background: alpha(@violet, 0.16);
 }
 
-#custom-memory {
-    background-image: url("/home/tjabo/.config/waybar/memory/png");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: left center;
+/* ── Launcher: the gradient "logo" pill ──────────────────── */
+#custom-launcher {
+    font-size: 16px;
+    color: #ffffff;
+    padding: 0 13px 0 10px;
+    margin-left: 4px;
+    background: linear-gradient(135deg, @violet, @pink);
 }
 
-#workspaces button:hover,
-#tags button:hover,
-#network:hover,
-#pulseaudio:hover,
-#language:hover,
-#battery:hover,
-#backlight:hover,
-#custom-clock:hover,
-#custom-memory:hover,
-#custom-spotify:hover,
-#cpu:hover,
-#tray:hover,
-#custom-launcher:hover,
-#custom-power:hover,
-#custom-wallpaper:hover,
-#custom-updates:hover,
-#custom-media:hover {
-    background: rgba(200, 180, 255, 0.15);
-    box-shadow: 0 0 6px rgba(160, 130, 255, 0.4);
-    border: 1px solid rgba(240, 150, 255, 0.4);
+#custom-launcher:hover {
+    background: linear-gradient(135deg, shade(@violet, 1.15), shade(@pink, 1.15));
+}
+
+/* ── Workspaces ──────────────────────────────────────────── */
+#workspaces {
+    padding: 0 2px;
+}
+
+#workspaces button {
+    padding: 0 8px;
+    margin: 0 1px;
+    min-width: 0;
+    border-radius: 8px;
+    color: @subtext;
+    background: transparent;
+    transition: all 200ms ease;
+}
+
+#workspaces button.empty {
+    color: @muted;
+}
+
+#workspaces button:hover {
+    background: alpha(@violet, 0.18);
+    color: @text;
 }
 
 #workspaces button.active {
-    background: linear-gradient(135deg, #9b5de5, #f15bb5);
+    padding: 0 14px;
     color: #ffffff;
     font-weight: bold;
-    box-shadow: 0 0 8px rgba(240, 150, 255, 0.6);
+    background: linear-gradient(135deg, @violet, @pink);
+}
+
+#workspaces button.special {
+    color: @cyan;
+}
+
+#workspaces button.urgent {
+    color: #ffffff;
+    background: alpha(@red, 0.7);
+}
+
+/* ── Center ──────────────────────────────────────────────── */
+#clock {
+    font-weight: bold;
+    padding: 0 14px;
+}
+
+#mpris.paused {
+    color: @muted;
+}
+
+/* ── States ──────────────────────────────────────────────── */
+#custom-updates {
+    color: @pink;
+}
+
+#idle_inhibitor {
+    color: @subtext;
+}
+
+#idle_inhibitor.activated {
+    color: #ffffff;
+    background: linear-gradient(135deg, @violet, @pink);
 }
 
 #pulseaudio.muted {
-    background: linear-gradient(135deg, #ff1744, #ff5252);
-    color: #ffffff;
-    font-weight: bold;
-    box-shadow: 0 0 6px rgba(255, 50, 50, 0.8);
+    color: @red;
+    background: alpha(@red, 0.12);
 }
 
-@keyframes pulseMute {
-    from { box-shadow: 0 0 6px rgba(255, 50, 50, 0.5); }
-    to { box-shadow: 0 0 8px rgba(255, 0, 0, 0.9); }
+#network.disconnected {
+    color: @red;
 }
 
 #battery.charging,
 #battery.plugged {
-    background: linear-gradient(135deg, #4caf50, #81c784);
-    color: #fff;
-    box-shadow: 0 0 6px rgba(100, 255, 100, 0.5);
+    color: @green;
+}
+
+#battery.warning:not(.charging) {
+    color: @amber;
 }
 
 #battery.critical:not(.charging) {
-    background: linear-gradient(135deg, #ff5252, #ff1744);
-    color: #fff;
+    color: #ffffff;
+    background: linear-gradient(135deg, @red, #ff1744);
     animation: blink 0.8s infinite alternate;
-    box-shadow: 0 0 8px rgba(255, 70, 70, 0.6);
 }
 
 @keyframes blink {
     from { opacity: 1; }
-    to { opacity: 0.5; }
-}
-
-#custom-launcher {
-    font-size: 20px;
-    color: #ffffff;
-    background: linear-gradient(135deg, #9b5de5, #f15bb5);
-    padding: 5px 5px 5px 10px;
+    to   { opacity: 0.5; }
 }
 
 #custom-power {
-    font-size: 18px;
-    color: #fff;
-    background: linear-gradient(135deg, #ff5f6d, #ffc371);
-    box-shadow: 0 0 6px rgba(255, 120, 100, 0.5);
+    color: #ff5f6d;
+    margin-right: 4px;
+    padding: 0 12px;
 }
 
-/* Icons vs text colors */
-#pulseaudio span:first-child,
-#network span:first-child,
-#backlight span:first-child,
-#battery span:first-child,
-#custom-clock span:first-child,
-#hyprland-language span:first-child,
-#cpu span:first-child,
-#custom-memory span:first-child,
-#custom-spotify span:first-child {
-    color: #9b5de5; /* icon color */
+#custom-power:hover {
+    background: alpha(#ff5f6d, 0.2);
 }
 
-#pulseaudio span:last-child,
-#network span:last-child,
-#backlight span:last-child,
-#battery span:last-child,
-#custom-clock span:last-child,
-#hyprland-language span:last-child,
-#cpu span:last-child,
-#custom-memory span:last-child,
-#custom-spotify span:last-child {
-    color: #e0e0f0; /* text color */
+/* ── Tooltips & tray menus ───────────────────────────────── */
+tooltip {
+    background: @surface;
+    border: 1px solid alpha(@violet, 0.45);
+    border-radius: 10px;
+}
+
+tooltip label {
+    color: @text;
+    padding: 4px 6px;
+}
+
+menu {
+    background: @surface;
+    border: 1px solid alpha(@violet, 0.35);
+    border-radius: 8px;
+    color: @text;
+    padding: 4px;
+}
+
+menuitem {
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+menuitem:hover {
+    background: alpha(@violet, 0.25);
 }

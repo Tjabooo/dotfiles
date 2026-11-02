@@ -1,0 +1,17 @@
+#!/bin/bash
+# neon-shot: the Print key binds.
+#
+#   neon-shot region | window | output   hyprshot → satty (Enter copies + closes, see satty config)
+#   neon-shot region-clip                region straight to the clipboard, no editor
+#   neon-shot edit                       open the last saved screenshot in satty again
+dir="$HOME/Pictures/Screenshots"
+mkdir -p "$dir"
+case ${1:-region} in
+  region|window|output) hyprshot -z --raw -m "${1:-region}" | satty --filename - ;;
+  region-clip) exec hyprshot -z -m region --clipboard-only ;;
+  edit)
+    f=$(ls -t "$dir"/*.png 2>/dev/null | head -1)
+    [[ -f $f ]] && exec satty --filename "$f"
+    notify-send -a Screenshot "No saved screenshot to edit yet"; exit 1 ;;
+  *) echo "usage: neon-shot region|window|output|region-clip|edit" >&2; exit 2 ;;
+esac

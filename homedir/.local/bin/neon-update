@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+"""neon-update: `update` with guard rails (alias in ~/.zshrc, waybar updates button).
+
+  neon-update [yay args]   Arch news → yay -Syu → .pacnew check → orphans → reboot hint
+  neon-update --check      everything except the upgrade itself
+
+Arch news items newer than your last successful update are shown first and you can bail
+out (that's where Arch announces upgrades that need manual steps).
+"""
+import html
+import os
+import re
+import subprocess
+import sys
+import time
+import urllib.request
+import xml.etree.ElementTree as ET
+from email.utils import parsedate_to_datetime
+from pathlib import Path
+
+HOME = Path.home()
+STATE = Path(os.environ.get("XDG_STATE_HOME", HOME / ".local/state")) / "neon"
+SEEN = STATE / "arch-news-seen"
+FEED = "https://archlinux.org/feeds/news/"
+
+# midnight neon: violet, pink, red, dim, bold, reset
+V, P, R, D, B, X = "\033[38;2;155;93;229m", "\033[38;2;241;91;181m", "\033[38;2;255;82;82m", \
+                   "\033[38;2;108;108;138m", "\033[1m", "\033[0m"
+
+
+def head(t):
+    print(f"\n{V}{B}▌ {t}{X}")
+
+
+def news():
+    head("ARCH NEWS")
+    try:
+        with urllib.request.urlopen(FEED, timeout=8) as r:
+            root = ET.fromstring(r.read())
+    except Exception as e:  # offline, DNS, bad XML: don't block the update
+        print(f"  {P}couldn't fetch the news feed ({e.__class__.__name__}); check archlinux.org yourself{X}")
+        return True
+    try:
+        seen = float(SEEN.read_text().strip())
+    except (OSError, ValueError):
+        seen = time.time() - 30 * 86400  # first run: last 30 days
+    fresh = []
+    for it in root.iter("item"):
+        try:
+            ts = parsedate_to_datetime(it.findtext("pubDate")).timestamp()
+        except (TypeError, ValueError):
+            continue
+        if ts > seen:
+            fresh.append((ts, it.findtext("title") or "?", it.findtext("link") or "",
+                          it.findtext("description") or ""))
+    if not fresh:
+        print(f"  {D}nothing new since last update{X}")
+        return True
+    for ts, title, link, desc in sorted(fresh):
+        text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", desc))).strip()
+        print(f"  {P}{B}{time.strftime('%Y-%m-%d', time.localtime(ts))}  {title}{X}")
+        print(f"  {D}{link}{X}")
+        print("  " + (text[:420] + "…" if len(text) > 420 else text) + "\n")
+    try:
+        ans = input(f"  {V}read the above? continue with the update [Y/n] {X}").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return False
+    return ans in ("", "y", "yes")
+
+
+def mark_news_seen():
+    STATE.mkdir(parents=True, exist_ok=True)
+    SEEN.write_text(f"{time.time():.0f}\n")
+
+
+def pacnew():
+    head("CONFIG FILES (.pacnew / .pacsave)")
+    try:
+        out = subprocess.run(["pacdiff", "-o"], capture_output=True, text=True, timeout=60).stdout.split()
+    except (OSError, subprocess.TimeoutExpired):
+        print(f"  {P}pacdiff not available (install pacman-contrib){X}")
+        return
+    if not out:
+        print(f"  {D}none{X}")
+        return
+    for f in out:
+        print(f"  {P}{f}{X}")
+    print(f"  merge them with: {B}sudo DIFFPROG='nvim -d' pacdiff{X}")
+
+
+def orphans():
+    out = subprocess.run(["pacman", "-Qdtq"], capture_output=True, text=True).stdout.split()
+    if out:
+        head("ORPHANS")
+        print(f"  {len(out)} packages nothing depends on any more. Review + remove: {B}pacman -Qdtq | sudo pacman -Rns -{X}")
+
+
+def reboot_hint():
+    running = os.uname().release
+    if not Path(f"/usr/lib/modules/{running}").exists():
+        head("REBOOT")
+        print(f"  {P}the running kernel ({running}) was replaced; reboot when it suits you{X}")
+
+
+def main():
+    a = sys.argv[1:]
+    if a and a[0] in ("-h", "--help"):
+        print(__doc__.strip())
+        return
+    check = bool(a and a[0] == "--check")
+    if not news():
+        print(f"  {D}update cancelled{X}")
+        sys.exit(1)
+    rc = 0
+    if not check:
+        head("UPGRADE")
+        rc = subprocess.run(["yay", "-Syu", *a]).returncode
+        if rc != 0:
+            print(f"  {R}yay exited with {rc}{X}")
+        else:
+            mark_news_seen()
+        # waybar's updates counter: drop its cached count and refresh it now
+        Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "neon-updates").unlink(missing_ok=True)
+        subprocess.run(["pkill", "-RTMIN+8", "-x", "waybar"], capture_output=True)
+    pacnew()
+    orphans()
+    reboot_hint()
+    sys.exit(rc)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,71 +1,94 @@
-//    ______           __  ______      __
-//   / ____/___ ______/ /_/ ____/___ _/ /_
-//  / /_  / __ `/ ___/ __/ /   / __ `/ __/
-// / __/ / /_/ (__  ) /_/ /___/ /_/ / /_
-///_/    \__,_/____/\__/\____/\__,_/\__/
-//  https://github.com/m3tozz/FastCat
-
+// ~/.config/fastfetch/cat.jsonc  —  midnight-neon cat (based on m3tozz/FastCat)
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
   "logo": {
-    "source": "$HOME/.config/fastfetch/cat.txt",
-    "padding": {
-      "top": 2,
-      "right": 6,
+    "type": "file",
+    "source": "~/.config/fastfetch/cat.txt",
+    "color": {
+      "1": "38;2;155;93;229",
+      "2": "38;2;241;91;181"
     },
+    "padding": {
+      "top": 1,
+      "left": 2,
+      "right": 5
+    }
   },
   "display": {
-    "separator": " ",
+    "separator": "  ",
+    "color": {
+      "output": "38;2;186;187;241",
+      "separator": "38;2;108;108;138"
+    },
+    "percent": {
+      "type": 3,
+      "color": {
+        "green": "38;2;186;187;241",
+        "yellow": "38;2;255;195;113",
+        "red": "38;2;255;82;82"
+      }
+    },
+    "bar": {
+      "char": {
+        "elapsed": "■",
+        "total": "■"
+      },
+      "width": 10,
+      "color": {
+        "elapsed": "38;2;241;91;181",
+        "total": "38;2;108;108;138"
+      }
+    }
   },
   "modules": [
     "break",
-    "break",
     {
       "type": "title",
-      "keyWidth": 10,
+      "format": "{#1}{#38;2;241;91;181}{user-name}{#38;2;108;108;138} @ {#1}{#38;2;155;93;229}{host-name}"
     },
-    "break",
+    {
+      "type": "custom",
+      "format": "{#38;2;108;108;138}──────────────────────{#}"
+    },
     {
       "type": "os",
-      "key": " ",
-      "keyColor": "33",
-    },
-    {
-      "type": "kernel",
-      "key": " ",
-      "keyColor": "33",
-    },
-    {
-      "type": "packages",
-      "key": " ",
-      "keyColor": "33",
-    },
-    {
-      "type": "shell",
-      "key": " ",
-      "keyColor": "33",
-    },
-    {
-      "type": "terminal",
-      "key": " ",
-      "keyColor": "33",
+      "key": " ",
+      "keyColor": "38;2;155;93;229"
     },
     {
       "type": "wm",
-      "key": " ",
-      "keyColor": "33",
+      "key": " ",
+      "keyColor": "38;2;155;93;229"
+    },
+    {
+      "type": "packages",
+      "key": "󰏗 ",
+      "keyColor": "38;2;155;93;229"
     },
     {
       "type": "uptime",
-      "key": " ",
-      "keyColor": "33",
+      "key": " ",
+      "keyColor": "38;2;155;93;229"
+    },
+    {
+      "type": "memory",
+      "key": "󰍛 ",
+      "keyColor": "38;2;241;91;181"
+    },
+    {
+      "type": "battery",
+      "key": " ",
+      "keyColor": "38;2;241;91;181"
     },
     {
       "type": "media",
-      "key": "󰝚 ",
-      "keyColor": "33",
+      "key": " ",
+      "keyColor": "38;2;241;91;181"
     },
     "break",
-    "break",
-  ],
+    {
+      "type": "colors",
+      "symbol": "circle"
+    }
+  ]
 }

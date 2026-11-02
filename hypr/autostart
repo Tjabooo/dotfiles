@@ -26,8 +26,6 @@ swhkd &
 # power management
 $scripts/launch_hypridle &
 
-# tailscale management
-# $scripts/tailscale &
 
 # secret keyring
 $scripts/gnome-keyring &

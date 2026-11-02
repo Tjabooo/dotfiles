@@ -1,0 +1,10 @@
+[Unit]
+Description=Make GRUB the default boot entry once it has booted successfully
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/grub-promote
+
+[Install]
+WantedBy=multi-user.target

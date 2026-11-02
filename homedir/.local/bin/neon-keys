@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""neon-keys: keybind cheat sheet (SUPER+/), read straight from hyprland.lua.
+
+Every  hl.bind("COMBO", ...)  -- description   line is listed, so a bind documents itself
+by its trailing comment. Binds built in a loop get a line of their own:
+    --@keys SUPER + 1-0 | go to workspace
+Binds without a comment are left out. `neon-keys --print` writes the list to stdout.
+"""
+import os
+import re
+import subprocess
+import sys
+
+CONF = os.path.expanduser("~/.config/hypr/hyprland.lua")
+BIND = re.compile(r'^\s*hl\.bind\("([^"]+)".*--\s*(.+?)\s*$')
+EXTRA = re.compile(r'^\s*--@keys\s+(.+?)\s*\|\s*(.+?)\s*$')
+PRETTY = {"grave": "`", "slash": "/", "Escape": "Esc", "Print": "PrtSc", "RETURN": "Enter",
+          "mouse:272": "LMB", "mouse:273": "RMB", "mouse_down": "wheel ↓", "mouse_up": "wheel ↑",
+          "XF86PowerOff": "Power key", "XF86MonBrightnessUp": "Brightness ↑",
+          "XF86MonBrightnessDown": "Brightness ↓", "XF86AudioRaiseVolume": "Volume ↑",
+          "XF86AudioLowerVolume": "Volume ↓", "XF86AudioMute": "Mute key", "XF86AudioMicMute": "Mic-mute key",
+          "XF86AudioPlay": "Play key", "XF86AudioNext": "Next key", "XF86AudioPrev": "Prev key"}
+
+
+def pretty(combo):
+    return " + ".join(PRETTY.get(p.strip(), p.strip()) for p in combo.split("+"))
+
+
+def rows():
+    out = []
+    with open(CONF) as f:
+        for line in f:
+            m = EXTRA.match(line) or BIND.match(line)   # BIND is anchored, so commented-out binds don't match
+            if m:
+                out.append((pretty(m.group(1)), m.group(2)))
+    return out
+
+
+def main():
+    r = rows()
+    w = max(len(k) for k, _ in r) + 3
+    text = "\n".join(f"{k:<{w}}{d}" for k, d in r)
+    if "--print" in sys.argv:
+        print(text)
+        return
+    subprocess.run(["wofi", "--dmenu", "--prompt", "keys", "--width", "640", "--height", "600",
+                    "--cache-file", "/dev/null"], input=text, text=True, stdout=subprocess.DEVNULL)
+
+
+if __name__ == "__main__":
+    main()

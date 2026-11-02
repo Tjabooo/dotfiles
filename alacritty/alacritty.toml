@@ -1,48 +1,51 @@
+# ~/.config/alacritty/alacritty.toml  —  "midnight neon"
 
-#[class]
-#general = "Alacritty"
-#instance = "Alacritty"
+[general]
+live_config_reload = true
 
-[colors]
-draw_bold_text_with_bright_colors = true
-
-[cursor]
-style = "Block"
+[terminal.shell]
+program = "/usr/bin/zsh"
+args = ["--login"]
 
 [env]
 TERM = "xterm-256color"
 
+[window]
+opacity = 0.88
+dynamic_padding = true
+
+[window.padding]
+x = 16
+y = 12
+
 [font]
-size = 16
-
-[font.bold]
-family = "FiraCode Nerd Font"
-style = "Bold"
-
-[font.bold_italic]
-family = "FiraCode Nerd Font"
-style = "Bold Italic"
-
-[font.glyph_offset]
-x = 0
-y = 0
-
-[font.italic]
-family = "FiraCode Nerd Font"
-style = "Italic"
+size = 15
 
 [font.normal]
 family = "FiraCode Nerd Font"
 style = "Regular"
 
+[font.bold]
+family = "FiraCode Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "FiraCode Nerd Font"
+style = "Italic"
+
+[font.bold_italic]
+family = "FiraCode Nerd Font"
+style = "Bold Italic"
+
+[cursor]
+unfocused_hollow = true
+
+[cursor.style]
+shape = "Beam"
+blinking = "On"
+
 [mouse]
 hide_when_typing = true
-
-#[mouse.double_click]
-#threshold = 300
-
-#[mouse.triple_click]
-#threshold = 300
 
 [scrolling]
 history = 10000
@@ -52,22 +55,57 @@ multiplier = 3
 save_to_clipboard = true
 semantic_escape_chars = ",│`|:\"' ()[]{}<>\t"
 
-#[visual_bell]
-#animation = "EaseOutExpo"
-#color = "#e4c9af"
-#duration = 0.5
+# ── Colors ───────────────────────────────────────────
+[colors]
+draw_bold_text_with_bright_colors = true
 
-[window]
-opacity = 0.9
+[colors.primary]
+background = "#0f0f1e"
+foreground = "#e0e0f0"
+dim_foreground = "#9d9dbf"
+bright_foreground = "#ffffff"
 
-[window.padding]
-x = 15
-y = 10
+[colors.cursor]
+text = "#0f0f1e"
+cursor = "#f15bb5"
 
-[general]
-live_config_reload = true
-import = ["/home/tjabo/.config/alacritty/catppuccin/catppuccin-frappe.yml"]
+[colors.vi_mode_cursor]
+text = "#0f0f1e"
+cursor = "#00c6ff"
 
-[terminal.shell]
-program = "/usr/bin/zsh"
-args = ["--login"]
+[colors.selection]
+text = "CellForeground"
+background = "#3a2d5c"
+
+[colors.search.matches]
+foreground = "#0f0f1e"
+background = "#babbf1"
+
+[colors.search.focused_match]
+foreground = "#0f0f1e"
+background = "#f15bb5"
+
+[colors.normal]
+black   = "#1a1a2f"
+red     = "#ff6b81"
+green   = "#81c784"
+yellow  = "#ffc371"
+blue    = "#8aa8ff"
+magenta = "#9b5de5"
+cyan    = "#5ccfe6"
+white   = "#babbf1"
+
+[colors.bright]
+black   = "#4a4a6a"
+red     = "#ff8fa3"
+green   = "#a5d6a7"
+yellow  = "#ffd89b"
+blue    = "#a9bdff"
+magenta = "#f15bb5"
+cyan    = "#8be9fd"
+white   = "#e0e0f0"
+
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001B\r"

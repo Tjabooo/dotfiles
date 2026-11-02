@@ -1,0 +1,10 @@
+# Hyprland session daemons, started from hyprland.lua on "hyprland.start" and stopped
+# on "hyprland.shutdown". BindsTo= is what actually activates graphical-session.target
+# (it refuses a manual start), so the stock units' Requisite=/Requires= on it are met
+# and nothing races the login. Status of everything: systemctl --user list-dependencies neon-session.target
+[Unit]
+Description=Hyprland session daemons (neon)
+BindsTo=graphical-session.target
+Wants=graphical-session-pre.target
+After=graphical-session-pre.target
+Wants=waybar.service dunst.service hypridle.service hyprpaper.service cliphist.service hyprpolkitagent.service neon-power.service

@@ -1,0 +1,36 @@
+[Added Associations]
+image/jpeg=qimgv-5.desktop;qimgv-4.desktop;qimgv-3.desktop;qimgv-2.desktop;
+video/mp4=mpv.desktop;
+x-scheme-handler/http=firefox.desktop;
+x-scheme-handler/https=firefox.desktop;
+x-scheme-handler/chrome=firefox.desktop;
+text/html=firefox.desktop;
+application/x-extension-htm=firefox.desktop;
+application/x-extension-html=firefox.desktop;
+application/x-extension-shtml=firefox.desktop;
+application/xhtml+xml=firefox.desktop;
+application/x-extension-xhtml=firefox.desktop;
+application/x-extension-xht=firefox.desktop;
+
+[Default Applications]
+text/plain=code.desktop
+text/markdown=code.desktop
+application/json=code.desktop
+application/x-shellscript=code.desktop
+application/toml=code.desktop
+inode/directory=thunar.desktop
+image/jpeg=qimgv-5.desktop;
+x-scheme-handler/discord-562286213059444737=lunarclient.desktop
+x-scheme-handler/lunarclient=lunarclient.desktop
+x-scheme-handler/http=firefox.desktop
+x-scheme-handler/https=firefox.desktop
+x-scheme-handler/chrome=firefox.desktop
+text/html=firefox.desktop
+application/x-extension-htm=firefox.desktop
+application/x-extension-html=firefox.desktop
+application/x-extension-shtml=firefox.desktop
+application/xhtml+xml=firefox.desktop
+application/x-extension-xhtml=firefox.desktop
+application/x-extension-xht=firefox.desktop
+x-scheme-handler/discord=vesktop.desktop
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop

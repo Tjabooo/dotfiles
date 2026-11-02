@@ -1,0 +1,42 @@
+#!/bin/bash
+# neon-power: runs as neon-power.service (neon-session.target).
+#
+#  * AC plugged / unplugged → `hyprctl reload`. hyprland.lua reads AC0/online when it loads
+#    and picks the profile itself (AC: 120 Hz + full blur/shadows, battery: 60 Hz + light
+#    blur), so a manual `hyprctl reload` on battery can never put you back on 120 Hz.
+#    asusd already switches the platform profile / EPP (Performance ↔ Quiet) on its own.
+#  * Low battery warnings while discharging: one at 15 %, a critical one at 7 %.
+#
+# Polls sysfs every 5 s with bash builtins only (no forks while nothing changes).
+AC=/sys/class/power_supply/AC0/online
+BAT=/sys/class/power_supply/BAT0
+exec {tick}<> <(exec sleep infinity)
+nap() { read -rt "$1" -u "$tick" _; }
+note() { notify-send -a neon-power -h string:x-dunst-stack-tag:neon-power "$@"; }
+
+read -r prev < "$AC"
+warned=100
+while :; do
+  nap 5
+  read -r ac < "$AC" || continue
+  if [[ $ac != "$prev" ]]; then
+    prev=$ac
+    nap 1   # let asusd switch its profile first
+    hyprctl reload >/dev/null
+    if [[ $ac == 1 ]]; then
+      note -i battery-full-charging "Plugged in" "120 Hz · full effects"
+    else
+      note -i battery "On battery" "60 Hz · lighter effects"
+    fi
+    warned=100
+  fi
+  [[ $ac == 1 ]] && continue
+  read -r cap < "$BAT/capacity" || continue
+  if (( cap <= 7 && warned > 7 )); then
+    note -u critical -i battery-caution "Battery at ${cap} %" "Plug in now: the laptop will die soon"
+    warned=7
+  elif (( cap <= 15 && warned > 15 )); then
+    note -i battery-low "Battery at ${cap} %" "Time to find a charger"
+    warned=15
+  fi
+done

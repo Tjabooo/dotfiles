@@ -1,0 +1,11 @@
+#!/bin/sh
+# grub-install-signed: (re)install GRUB for Secure Boot WITHOUT shim, signed with the sbctl key.
+# Run by /etc/pacman.d/hooks/90-grub-signed.hook after every grub upgrade; safe to run by hand.
+# Under Secure Boot GRUB is in lockdown and can't load modules from disk, so every module the
+# config / theme needs is built into the image. --no-nvram leaves the firmware boot order alone
+# (the "GRUB" entry already exists; efibootmgr manages it).
+set -e
+MODS="all_video boot btrfs cat chain configfile echo efifwsetup efinet ext2 fat font gettext gfxmenu gfxterm gfxterm_background gzio halt help hfsplus iso9660 jpeg keystatus loadenv loopback linux ls lsefi lsefimmap lsefisystab lssal memdisk minicmd normal ntfs part_apple part_msdos part_gpt password_pbkdf2 png probe reboot regexp search search_fs_uuid search_fs_file search_label sleep smbios squash4 test true video xfs cpuid play tpm cryptodisk luks lvm"
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB --no-nvram --disable-shim-lock --modules="$MODS"
+sbctl sign -s /boot/EFI/GRUB/grubx64.efi
+grub-mkconfig -o /boot/grub/grub.cfg
