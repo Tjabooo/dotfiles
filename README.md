@@ -7,7 +7,7 @@ The desktop lives in `Tjabooo/dotfiles-desktop` ("ember"); this one is for media
 
 | repo path | goes to |
 |---|---|
-| `alacritty/ dunst/ fastfetch/ hypr/ mpv/ ohmyposh/ pacman/ satty/ systemd/ waybar/ wofi/ zed/` | `~/.config/<same>` |
+| `alacritty/ dunst/ fastfetch/ hypr/ mpv/ neon/ ohmyposh/ pacman/ satty/ systemd/ waybar/ wofi/ zed/` | `~/.config/<same>` |
 | `mimeapps.list` | `~/.config/mimeapps.list` |
 | `homedir/.zshrc .bashrc .bash_profile` | `~/` |
 | `homedir/.local/bin/neon-*` | `~/.local/bin/` |
@@ -31,9 +31,12 @@ units, so they restart when they crash and log to `journalctl --user -u <name>`.
 - **neon-osd**: volume / brightness / mic keys with an on-screen bar (dunst).
 - **neon-shot**: Print-key screenshots via hyprshot → satty; `SUPER+Print` re-edits the last one.
 - **neon-update** (`update`): Arch news → `yay -Syu` → .pacnew → orphans → reboot hint.
-- **neon-keys** (`SUPER+/`): cheat sheet built from the `-- comments` on the binds in hyprland.lua.
-- Power menu (`SUPER+Escape`) can do a one-shot reboot into Windows (GRUB or systemd-boot,
-  whichever booted).
+- **neon-keys** (`SUPER+/`): the desktop's keybind overlay (eww, `neon/eww/`), built live from the
+  `-- comments` on the binds in hyprland.lua; Esc / Enter / `SUPER+/` close it. `keys` prints it in the terminal.
+- Power menu (`SUPER+Escape`) shows all six entries without scrolling and can do a one-shot reboot
+  into Windows (GRUB or systemd-boot, whichever booted).
+- **House dot** (waybar `custom/house`): home server health from Marquee's House tab via
+  `marquee-house` (lives in the marquee repo, `agents/`); hidden away from home or when not installed.
 
 ## Boot: GRUB + Secure Boot (sbctl, no shim)
 
@@ -61,7 +64,7 @@ desktop: GRUB itself is signed with the sbctl key.
 ## Install on a fresh machine
 
 ```sh
-for d in alacritty dunst fastfetch hypr mpv ohmyposh pacman satty systemd waybar wofi zed; do
+for d in alacritty dunst fastfetch hypr mpv neon ohmyposh pacman satty systemd waybar wofi zed; do
   mkdir -p ~/.config/$d && cp -r $d/. ~/.config/$d/
 done
 cp mimeapps.list ~/.config/
@@ -70,5 +73,6 @@ systemctl --user daemon-reload
 # packages the config expects:
 sudo pacman -S --needed hyprland hyprlock hypridle hyprpaper hyprshot hyprpolkitagent \
   xdg-desktop-portal-hyprland waybar dunst wofi satty cliphist wl-clipboard brightnessctl \
-  playerctl pacman-contrib zoxide pkgfile alacritty kitty yazi mpv ttf-jetbrains-mono-nerd
+  playerctl pacman-contrib zoxide pkgfile alacritty kitty yazi mpv ttf-jetbrains-mono-nerd jq
+yay -S eww   # keybind overlay (AUR)
 ```

@@ -1,0 +1,40 @@
+;; ~/.config/neon/eww/eww.yuck — laptop overlays (midnight neon). Port of the desktop's
+;; ~/.config/ember/eww keybind sheet; same widget tree, same classes.
+
+;; ── keybind cheat sheet (SUPER+/) ────────────────────────────────────────────
+;; Parsed live from hyprland.lua by `neon-keys`: the trailing -- comment on a bind is its label.
+(deflisten keys
+  :initial '{"open":false,"count":0,"cols":[]}'
+  `$HOME/.local/bin/neon-keys stream`)
+
+(defwidget keygroup [name items]
+  (box :class "deck-group keys-group" :orientation "v" :space-evenly false
+    (label :class "deck-gname" :xalign 0 :text name)
+    (for it in items
+      (box :class "deck-item" :space-evenly false :spacing 10
+        (label :class "key keys-key" :xalign 0.5 :text "${it.key}")
+        (label :class "deck-label" :xalign 0 :hexpand true :limit-width 30 :text "${it.label}")))))
+
+(defwidget keycol [groups]
+  (box :class "keys-col" :orientation "v" :space-evenly false :spacing 14
+    (for g in groups
+      (keygroup :name "${g.name}" :items {g.items}))))
+
+(defwindow keys
+  :monitor 0
+  :geometry (geometry :anchor "center")
+  :stacking "overlay"
+  :exclusive false
+  :focusable false
+  :namespace "neon-keys"
+  (box :class "deck keys" :orientation "v" :space-evenly false
+    (box :class "head" :space-evenly false
+      (label :class "brand-sm" :text "KEYBINDS")
+      (label :class "count keys-count" :text "${keys.count} BOUND")
+      (box :hexpand true)
+      (label :class "hint" :text "❖ SUPER  ·  ⇧ SHIFT  ·  ESC CLOSE"))
+    (box :class "deck-groups" :space-evenly false :spacing 18
+      (for c in {keys.cols}
+        (keycol :groups c)))
+    (label :class "hint" :xalign 0
+           :text "labels come from the -- comments on hl.bind lines in hyprland.lua")))

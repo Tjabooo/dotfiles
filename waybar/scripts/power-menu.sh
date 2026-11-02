@@ -2,7 +2,7 @@
 # ~/.config/waybar/scripts/power-menu.sh  —  wofi power menu (SUPER+Escape / waybar power button)
 options=$'  Lock\n\U000f0904  Suspend\n  Reboot\n  Reboot to Windows\n  Shut down\n\U000f0343  Log out'
 
-choice=$(printf '%s' "$options" | wofi --dmenu --prompt power --width 280 --height 330 --cache-file /dev/null)
+choice=$(printf '%s' "$options" | wofi --dmenu --prompt power --width 280 --lines 6 --cache-file /dev/null)
 
 case "$choice" in
   *Lock)        pidof hyprlock || hyprlock ;;

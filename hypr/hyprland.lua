@@ -266,7 +266,20 @@ hl.bind("SUPER + SHIFT + E", hl.dsp.workspace.toggle_special("files"))  -- yazi 
 hl.bind("SUPER + W",         hl.dsp.exec_cmd("pkill -SIGUSR1 waybar"))  -- show / hide waybar (movies)
 hl.bind("SUPER + N",         hl.dsp.exec_cmd("dunstctl history-pop"))  -- last notification again
 hl.bind("SUPER + SHIFT + N", hl.dsp.exec_cmd("dunstctl close-all"))  -- clear notifications
-hl.bind("SUPER + slash",     hl.dsp.exec_cmd(bin .. "neon-keys"))  -- this cheat sheet
+hl.bind("SUPER + slash", function()  -- this cheat sheet
+    hl.exec_cmd(bin .. "neon-keys show")
+    hl.dispatch(hl.dsp.submap("keys"))
+end)
+-- while the sheet is open: Esc / Enter / SUPER+/ close it
+local function close_keys()
+    hl.exec_cmd(bin .. "neon-keys hide")
+    hl.dispatch(hl.dsp.submap("reset"))
+end
+hl.define_submap("keys", function()
+    hl.bind("Escape", close_keys)
+    hl.bind("Return", close_keys)
+    hl.bind("SUPER + slash", close_keys)
+end)
 
 -- Windows
 hl.bind("CTRL + Q",  hl.dsp.window.close())  -- close window
@@ -274,11 +287,9 @@ hl.bind("SUPER + S", hl.dsp.window.float({ action = "toggle" }))  -- float / til
 hl.bind("SUPER + F", hl.dsp.window.fullscreen())  -- fullscreen
 hl.bind("SUPER + J", hl.dsp.layout("togglesplit"))  -- flip split
 
---@keys SUPER + arrows | focus window in that direction
---@keys SUPER + SHIFT + arrows | move window in that direction
 for _, dir in ipairs({ "left", "right", "up", "down" }) do
-    hl.bind("SUPER + " .. dir,         hl.dsp.focus({ direction = dir }))
-    hl.bind("SUPER + SHIFT + " .. dir, hl.dsp.window.move({ direction = dir }))
+    hl.bind("SUPER + " .. dir,         hl.dsp.focus({ direction = dir }))  -- focus window
+    hl.bind("SUPER + SHIFT + " .. dir, hl.dsp.window.move({ direction = dir }))  -- move window
 end
 
 hl.bind("SUPER + mouse:272", hl.dsp.window.drag(),   { mouse = true })  -- drag window
@@ -290,12 +301,10 @@ hl.bind("SUPER + G",   hl.dsp.group.toggle())  -- tab group on / off
 hl.bind("SUPER + tab", hl.dsp.group.next({ forward = false }))  -- next tab in group
 
 -- Workspaces: SUPER+n = go to, ALT+n = send window
---@keys SUPER + 1-0 | go to workspace
---@keys ALT + 1-0 | send window to workspace
 for i = 1, 10 do
     local key = tostring(i % 10)
-    hl.bind("SUPER + " .. key, hl.dsp.focus({ workspace = i }))
-    hl.bind("ALT + " .. key,   hl.dsp.window.move({ workspace = i }))
+    hl.bind("SUPER + " .. key, hl.dsp.focus({ workspace = i }))  -- go to workspace
+    hl.bind("ALT + " .. key,   hl.dsp.window.move({ workspace = i }))  -- send window there
 end
 hl.bind("SUPER + mouse_down", hl.dsp.focus({ workspace = "e+1" }))  -- next workspace
 hl.bind("SUPER + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))  -- previous workspace
@@ -312,7 +321,7 @@ hl.bind("SUPER + Print", hl.dsp.exec_cmd(shot .. "edit"))  -- edit last saved sc
 hl.bind("SUPER + L",      hl.dsp.exec_cmd("pidof hyprlock || hyprlock"))  -- lock
 hl.bind("SUPER + Escape", hl.dsp.exec_cmd(menu))  -- power menu (incl. reboot to Windows)
 
--- Hardware keys with an on-screen bar (work on the lock screen; volume/brightness repeat when held)
+-- Hardware keys (on-screen bar; work on the lock screen, volume/brightness repeat when held)
 local osd = bin .. "neon-osd "
 hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd(osd .. "light up"),   { locked = true, repeating = true })  -- brightness up
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd(osd .. "light down"), { locked = true, repeating = true })  -- brightness down

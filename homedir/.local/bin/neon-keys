@@ -1,50 +1,248 @@
 #!/usr/bin/env python3
-"""neon-keys: keybind cheat sheet (SUPER+/), read straight from hyprland.lua.
+"""neon-keys: keybind cheat sheet overlay (SUPER+/). Port of the desktop's ember-keys (same
+overlay, midnight neon palette); the SUPER+/ bind itself opens it and enters the "keys" submap,
+whose Esc / Enter / SUPER+/ binds close it again (no emberd on the laptop).
 
-Every  hl.bind("COMBO", ...)  -- description   line is listed, so a bind documents itself
-by its trailing comment. Binds built in a loop get a line of their own:
-    --@keys SUPER + 1-0 | go to workspace
-Binds without a comment are left out. `neon-keys --print` writes the list to stdout.
+  neon-keys json            the parsed cheat sheet, pretty-printed (handy for checking)
+  neon-keys stream          JSON for the eww overlay
+  neon-keys show | hide     open/close the overlay
+  neon-keys --print         plain text list in the terminal (the `keys` alias)
+
+Source of truth is ~/.config/hypr/hyprland.lua itself, so it can't drift:
+  - every top-level `hl.bind("COMBO", ...)  -- label` becomes an entry; the trailing
+    comment is the label (without one, a label is guessed from the action)
+  - a short comment line above a run of binds (`-- Apps`, `-- Lock / power`) names the group
+  - binds inside hl.define_submap(...) are skipped (the keys submap only closes the sheet)
+  - add `[hide]` to a bind's comment to keep it off the sheet
 """
+import json
 import os
 import re
 import subprocess
 import sys
+import time
+from pathlib import Path
 
-CONF = os.path.expanduser("~/.config/hypr/hyprland.lua")
-BIND = re.compile(r'^\s*hl\.bind\("([^"]+)".*--\s*(.+?)\s*$')
-EXTRA = re.compile(r'^\s*--@keys\s+(.+?)\s*\|\s*(.+?)\s*$')
-PRETTY = {"grave": "`", "slash": "/", "Escape": "Esc", "Print": "PrtSc", "RETURN": "Enter",
-          "mouse:272": "LMB", "mouse:273": "RMB", "mouse_down": "wheel ↓", "mouse_up": "wheel ↑",
-          "XF86PowerOff": "Power key", "XF86MonBrightnessUp": "Brightness ↑",
-          "XF86MonBrightnessDown": "Brightness ↓", "XF86AudioRaiseVolume": "Volume ↑",
-          "XF86AudioLowerVolume": "Volume ↓", "XF86AudioMute": "Mute key", "XF86AudioMicMute": "Mic-mute key",
-          "XF86AudioPlay": "Play key", "XF86AudioNext": "Next key", "XF86AudioPrev": "Prev key"}
+HOME = Path.home()
+CONF = Path(os.environ.get("XDG_CONFIG_HOME", HOME / ".config"))
+STATE = Path(os.environ.get("XDG_STATE_HOME", HOME / ".local/state")) / "neon"
+HYPR = CONF / "hypr/hyprland.lua"
+EWW_CFG = CONF / "neon/eww"
+OPEN_FLAG = STATE / "keys-open"
+COLUMNS = 5   # 1440 px wide logical screen (2880x1800 at 1.5x)
+
+MODS = {"SUPER": "❖", "SHIFT": "⇧", "CTRL": "CTRL", "CONTROL": "CTRL", "ALT": "ALT"}
+KEYS = {"left": "←", "right": "→", "up": "↑", "down": "↓", "return": "⏎", "space": "␣",
+        "escape": "ESC", "backspace": "⌫", "tab": "TAB", "grave": "`", "slash": "/",
+        "print": "PRT", "mouse:272": "LMB", "mouse:273": "RMB",
+        "mouse_down": "WHEEL↓", "mouse_up": "WHEEL↑",
+        "xf86audioraisevolume": "VOL+", "xf86audiolowervolume": "VOL−", "xf86audiomute": "MUTE",
+        "xf86audiomicmute": "MIC", "xf86audioplay": "PLAY", "xf86audionext": "NEXT",
+        "xf86audioprev": "PREV", "xf86monbrightnessup": "BRI+", "xf86monbrightnessdown": "BRI−"}
+LOOP_VARS = {"dir": "←↑→↓", "key": "1…0", "i": "1…0"}
+VAR_LABELS = {"terminal": "terminal", "browser": "browser", "files": "file manager",
+              "launcher": "app launcher", "discord": "Discord", "menu": "power menu"}
+
+BIND = re.compile(r'^\s*hl\.bind\(\s*"([^"]*)"\s*(?:\.\.\s*(\w+)\s*)?,\s*(.*)$')
+HEADER = re.compile(r'^\s*--\s*(?:[─━-]+\s*)?([^─━>].*?)\s*[─━-]*\s*$')
 
 
-def pretty(combo):
-    return " + ".join(PRETTY.get(p.strip(), p.strip()) for p in combo.split("+"))
-
-
-def rows():
+def pretty_combo(combo, var=None):
+    parts = [p.strip() for p in combo.split("+") if p.strip()]
     out = []
-    with open(CONF) as f:
-        for line in f:
-            m = EXTRA.match(line) or BIND.match(line)   # BIND is anchored, so commented-out binds don't match
-            if m:
-                out.append((pretty(m.group(1)), m.group(2)))
-    return out
+    for p in parts:
+        up = p.upper()
+        out.append(MODS.get(up) or KEYS.get(p.lower()) or (p.upper() if len(p) == 1 else p))
+    if var:
+        out.append(LOOP_VARS.get(var, var))
+    return " ".join(out)
+
+
+def split_comment(code):
+    """(code, comment): the first `--` that isn't inside a string literal."""
+    quote = None
+    for i, ch in enumerate(code):
+        if quote:
+            if ch == "\\":
+                continue
+            if ch == quote and code[i - 1] != "\\":
+                quote = None
+        elif ch in "\"'":
+            quote = ch
+        elif code.startswith("--", i):
+            return code[:i], code[i + 2:].strip()
+    return code, ""
+
+
+def guess_label(action):
+    m = re.search(r'exec_cmd\(\s*(\w+)\s*\)', action)
+    if m:
+        return VAR_LABELS.get(m.group(1), m.group(1))
+    m = re.search(r'exec_cmd\(\s*"([^"\s]+)', action)
+    if m:
+        return Path(m.group(1)).name
+    m = re.search(r'hl\.dsp\.([\w.]+)\(', action)
+    return m.group(1).replace(".", " ").replace("_", " ") if m else action[:24]
+
+
+def group_name(text):
+    text = re.sub(r"\(.*?\)", "", text).split(":")[0].strip(" .")
+    return text.upper()
+
+
+def parse(src):
+    groups, order = {}, []
+    group, block, in_submap, prev_comment = "GENERAL", None, 0, None
+    for line in src.splitlines():
+        s = line.strip()
+        if s.startswith("-- >>> "):
+            block = s[7:].strip()
+            continue
+        if s.startswith("-- <<< "):
+            block = None
+            continue
+        if "hl.define_submap(" in s:
+            in_submap += 1
+            continue
+        if in_submap and s.startswith("end)"):
+            in_submap -= 1
+            continue
+        if s.startswith("--"):
+            m = HEADER.match(s)
+            text = re.sub(r"\(.*?\)", "", m.group(1) if m else "").strip()
+            # short comment lines are group headers; long prose is ignored
+            if text and len(text) <= 50 and not text.lower().startswith("generated"):
+                prev_comment = text
+            continue
+        if not s:
+            continue
+        m = BIND.match(line)
+        if not m:
+            if not s.startswith(("local ", "for ", "end")):
+                prev_comment = None  # some other statement breaks a header's run
+            continue
+        if prev_comment is not None:
+            group = group_name(prev_comment)
+            prev_comment = None
+        if in_submap:
+            continue
+        combo, var, rest = m.groups()
+        action, comment = split_comment(rest)
+        if "[hide]" in comment:
+            continue
+        g = group
+        label = comment.strip('"') if comment else guess_label(action)
+        key = pretty_combo(combo, var)
+        if g not in groups:
+            groups[g] = []
+            order.append(g)
+        groups[g].append({"key": key, "label": label})
+    return [{"name": g, "items": groups[g]} for g in order]
+
+
+def columns(groups, n=COLUMNS):
+    """Split groups (in file order) into n columns of roughly equal height."""
+    total = sum(len(g["items"]) + 2 for g in groups)
+    target = max(1, -(-total // n))
+    cols, cur, h = [], [], 0
+    for g in groups:
+        gh = len(g["items"]) + 2
+        if cur and h + gh > target and len(cols) < n - 1:
+            cols.append(cur)
+            cur, h = [], 0
+        cur.append(g)
+        h += gh
+    if cur:
+        cols.append(cur)
+    return cols
+
+
+def sheet():
+    try:
+        groups = parse(HYPR.read_text())
+    except OSError as e:
+        groups = [{"name": "ERROR", "items": [{"key": "!", "label": str(e)}]}]
+    return {"open": OPEN_FLAG.exists(), "count": sum(len(g["items"]) for g in groups),
+            "cols": columns(groups)}
+
+
+def cmd_stream():
+    last = None
+    while True:
+        try:
+            mt = HYPR.stat().st_mtime
+        except OSError:
+            mt = 0
+        key = (OPEN_FLAG.exists(), mt)
+        if key != last:
+            last = key
+            try:
+                print(json.dumps(sheet()), flush=True)
+            except BrokenPipeError:
+                return
+        time.sleep(0.4 if key[0] else 1.5)
+
+
+def sh(*cmd, timeout=10):
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        return r.returncode, (r.stdout + r.stderr).strip()
+    except (FileNotFoundError, subprocess.TimeoutExpired) as e:
+        return 1, str(e)
+
+
+def eww(*args):
+    return sh("eww", "-c", str(EWW_CFG), *args)
+
+
+def focused_monitor():
+    rc, out = sh("hyprctl", "monitors", "-j")
+    try:
+        m = next((m for m in json.loads(out) if m.get("focused")), None)
+    except json.JSONDecodeError:
+        return []
+    return [x for x in (m.get("model"), m.get("name")) if x] if m else []
+
+
+def cmd_show():
+    if sh("which", "eww")[0] != 0:
+        sh("notify-send", "-a", "neon-keys", "Keybind overlay needs eww", "Install it with:  yay -S eww")
+        return
+    STATE.mkdir(parents=True, exist_ok=True)
+    OPEN_FLAG.touch()
+    if eww("ping")[1] != "pong":
+        subprocess.Popen(["eww", "-c", str(EWW_CFG), "daemon"], stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, start_new_session=True)
+        for _ in range(40):
+            time.sleep(0.1)
+            if eww("ping")[1] == "pong":
+                break
+    for mon in [*focused_monitor(), None]:
+        if eww("open", "keys", *(["--screen", mon] if mon else []))[0] == 0:
+            break
+
+
+def cmd_hide():
+    if OPEN_FLAG.exists():
+        OPEN_FLAG.unlink(missing_ok=True)
+        eww("close", "keys")
 
 
 def main():
-    r = rows()
-    w = max(len(k) for k, _ in r) + 3
-    text = "\n".join(f"{k:<{w}}{d}" for k, d in r)
-    if "--print" in sys.argv:
-        print(text)
+    a = sys.argv[1:]
+    if not a or a[0] in ("-h", "--help", "help"):
+        print(__doc__.strip()); return
+    if a[0] == "--print":
+        for g in parse(HYPR.read_text()):
+            print(f"\n{g['name']}")
+            for it in g["items"]:
+                print(f"  {it['key']:<16}{it['label']}")
         return
-    subprocess.run(["wofi", "--dmenu", "--prompt", "keys", "--width", "640", "--height", "600",
-                    "--cache-file", "/dev/null"], input=text, text=True, stdout=subprocess.DEVNULL)
+    if a[0] == "stream": cmd_stream()
+    elif a[0] == "json": print(json.dumps(sheet(), indent=1, ensure_ascii=False))
+    elif a[0] == "show": cmd_show()
+    elif a[0] == "hide": cmd_hide()
+    else: sys.exit("neon-keys: bad command (try `neon-keys help`)")
 
 
 if __name__ == "__main__":

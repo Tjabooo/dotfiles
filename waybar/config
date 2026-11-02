@@ -11,7 +11,7 @@
 
   "modules-left":   ["custom/launcher", "hyprland/workspaces", "mpris"],
   "modules-center": ["clock"],
-  "modules-right":  ["custom/updates", "tray", "idle_inhibitor", "group/stats",
+  "modules-right":  ["custom/updates", "custom/house", "tray", "idle_inhibitor", "group/stats",
                      "backlight", "pulseaudio", "hyprland/language", "network",
                      "battery", "custom/power"],
 
@@ -66,6 +66,16 @@
     "signal": 8,
     "tooltip": false,
     "on-click": "alacritty -e sh -c '~/.local/bin/neon-update; printf \"\\npress Enter to close \"; read _'"
+  },
+
+  // home server health (Marquee's House tab): hidden away from home and until marquee-house is installed
+  "custom/house": {
+    "exec": "~/.local/bin/marquee-house status",
+    "exec-if": "test -x ~/.local/bin/marquee-house",
+    "return-type": "json",
+    "interval": 300,
+    "signal": 9,
+    "tooltip": true
   },
 
   "tray": { "icon-size": 16, "spacing": 10 },

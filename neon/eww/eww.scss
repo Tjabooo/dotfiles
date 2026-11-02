@@ -1,0 +1,48 @@
+// laptop overlays: midnight neon (same values as hyprland.lua / waybar / dunst).
+// Note: no CSS letter-spacing on labels that can't stretch: GTK measures them
+// without it and then cuts the last letter off.
+$bg:     #0f0f1e;
+$panel:  #1a1a2f;
+$line:   #2a2a45;
+$fg:     #e0e0f0;
+$dim:    #6c6c8a;
+$violet: #9b5de5;
+$pink:   #f15bb5;
+
+* {
+  all: unset;
+  font-family: "JetBrainsMono Nerd Font", monospace;
+}
+
+.deck {
+  background-color: rgba(15, 15, 30, 0.95);
+  border: 1px solid $line;
+  border-top: 3px solid $violet;
+  padding: 14px 16px;
+  color: $fg;
+}
+.head     { margin-bottom: 16px; }
+.brand-sm { font-size: 13px; font-weight: 800; color: $violet; }
+.count    { font-size: 11px; font-weight: 700; color: $pink; }
+.hint     { font-size: 10px; color: $dim; margin-top: 8px; }
+
+.deck-groups { margin-top: 12px; }
+.deck-group  { min-width: 210px; }
+.deck-gname  { font-size: 10px; color: $dim; margin-bottom: 6px; }
+.deck-item   { margin: 3px 0; }
+.key {
+  font-size: 12px;
+  font-weight: 800;
+  min-width: 28px;
+  padding: 2px 6px;
+  color: $bg;
+  background-color: $violet;
+}
+.deck-label  { font-size: 12px; }
+
+// keybind cheat sheet
+.keys        { min-width: 1150px; }
+.keys-count  { margin-left: 12px; }
+.keys-col    { min-width: 210px; }
+.keys-group  { min-width: 210px; }
+.keys-key    { min-width: 64px; font-size: 11px; }

@@ -45,7 +45,7 @@ window#waybar.hidden {
 }
 
 /* ── Shared module look ──────────────────────────────────── */
-#custom-launcher, #workspaces, #mpris, #clock, #custom-updates, #tray,
+#custom-launcher, #workspaces, #mpris, #clock, #custom-updates, #custom-house, #tray,
 #idle_inhibitor, #cpu, #memory, #backlight, #pulseaudio, #language,
 #network, #battery, #custom-power {
     padding: 0 10px;
@@ -56,7 +56,7 @@ window#waybar.hidden {
     transition: background 200ms ease, color 200ms ease;
 }
 
-#mpris:hover, #clock:hover, #custom-updates:hover, #idle_inhibitor:hover,
+#mpris:hover, #clock:hover, #custom-updates:hover, #custom-house:hover, #idle_inhibitor:hover,
 #cpu:hover, #memory:hover, #backlight:hover, #pulseaudio:hover,
 #language:hover, #network:hover, #battery:hover {
     background: alpha(@violet, 0.16);
@@ -206,3 +206,8 @@ menuitem {
 menuitem:hover {
     background: alpha(@violet, 0.25);
 }
+
+/* home server health (marquee-house): calm when fine, pink with a count when something needs a look */
+#custom-house.ok     { color: #babbf1; }
+#custom-house.issues { color: #f15bb5; }
+#custom-house.down   { color: #6c6c8a; }
