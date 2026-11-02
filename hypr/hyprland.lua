@@ -266,11 +266,9 @@ hl.bind("SUPER + SHIFT + E", hl.dsp.workspace.toggle_special("files"))  -- yazi 
 hl.bind("SUPER + W",         hl.dsp.exec_cmd("pkill -SIGUSR1 waybar"))  -- show / hide waybar (movies)
 hl.bind("SUPER + N",         hl.dsp.exec_cmd("dunstctl history-pop"))  -- last notification again
 hl.bind("SUPER + SHIFT + N", hl.dsp.exec_cmd("dunstctl close-all"))  -- clear notifications
-hl.bind("SUPER + slash", function()  -- this cheat sheet
-    hl.exec_cmd(bin .. "neon-keys show")
-    hl.dispatch(hl.dsp.submap("keys"))
-end)
--- while the sheet is open: Esc / Enter / SUPER+/ close it
+hl.bind("SUPER + slash", hl.dsp.exec_cmd(bin .. "neon-keys show"))  -- this cheat sheet
+-- while the sheet is open (neon-keys enters this submap only once the overlay is on screen):
+-- Esc / Enter / SUPER+/ close it
 local function close_keys()
     hl.exec_cmd(bin .. "neon-keys hide")
     hl.dispatch(hl.dsp.submap("reset"))
@@ -279,6 +277,7 @@ hl.define_submap("keys", function()
     hl.bind("Escape", close_keys)
     hl.bind("Return", close_keys)
     hl.bind("SUPER + slash", close_keys)
+    hl.bind("catchall", close_keys)  -- any other key closes it too: the submap can never trap you
 end)
 
 -- Windows

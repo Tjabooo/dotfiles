@@ -219,7 +219,12 @@ def cmd_show():
                 break
     for mon in [*focused_monitor(), None]:
         if eww("open", "keys", *(["--screen", mon] if mon else []))[0] == 0:
-            break
+            # only now enter the "keys" submap (Esc / Enter / SUPER+/ close it): every other bind
+            # is off inside it, so it must never be entered without the overlay on screen
+            sh("hyprctl", "dispatch", 'hl.dsp.submap("keys")')
+            return
+    OPEN_FLAG.unlink(missing_ok=True)
+    sh("notify-send", "-a", "neon-keys", "Keybind overlay didn't open", "eww couldn't open its window; try: eww -c ~/.config/neon/eww logs")
 
 
 def cmd_hide():
