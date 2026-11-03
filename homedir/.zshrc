@@ -11,6 +11,7 @@ alias update='neon-update'          # Arch news → yay -Syu → .pacnew → orp
 alias keys='neon-keys --print'
 alias logout="systemctl --user stop neon-session.target; hyprctl dispatch 'hl.dsp.exit()'"
 alias zed='/usr/bin/zeditor'
+alias claude2='CLAUDE_CONFIG_DIR=$HOME/.claude-2 claude'   # second Claude Pro account (shares ~/.claude via agent-mesh)
 alias basher='nvim ~/.zshrc'
 alias spotify-run='spotify --useFeatures=UseOzonePlatform --ozone-platform=wayland'
 alias batteryhealth='upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep -E "capacity|energy"'
