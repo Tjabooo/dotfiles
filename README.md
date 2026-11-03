@@ -11,7 +11,7 @@ The desktop lives in `Tjabooo/dotfiles-desktop` ("ember"); this one is for media
 | `vesktop/themes/` | `~/.config/vesktop/themes/` (Vesktop) and `~/.config/Vencord/themes/` (Discord + Vencord) |
 | `mimeapps.list` | `~/.config/mimeapps.list` |
 | `homedir/.zshrc .bashrc .bash_profile` | `~/` |
-| `homedir/.local/bin/neon-*`, `homedir/.local/bin/codex` | `~/.local/bin/` |
+| `homedir/.local/bin/neon-*`, `homedir/.local/bin/codex`, `homedir/.local/bin/clipdeck` | `~/.local/bin/` |
 | `homedir/.local/share/neon/` | `~/.local/share/neon/` (system-fixes.sh, GRUB theme builder, 10_neon source) |
 | `system/etc/…`, `system/usr/local/bin/…` | the same paths under `/` (root-owned; copy with sudo) |
 
@@ -38,6 +38,24 @@ units, so they restart when they crash and log to `journalctl --user -u <name>`.
   into Windows (GRUB or systemd-boot, whichever booted).
 - **House dot** (waybar `custom/house`): home server health from Marquee's House tab via
   `marquee-house` (lives in the marquee repo, `agents/`); hidden away from home or when not installed.
+
+## Clipboard history across the home network
+
+**SUPER+V** opens `clipdeck` in the neon overlay. Its three columns show this
+machine’s cliphist history, the other Arch machine’s history, and native Windows
+clipboard history, newest first. Press an entry’s displayed key or click it to
+copy it here; Escape closes the picker. Windows history starts collecting items
+when enabled in Windows Settings → System → Clipboard. If it is empty, disabled,
+or unavailable, the column shows the current Windows clipboard and says why.
+Selecting an older Windows item leaves Windows’ current clipboard unchanged.
+
+`homedir/.local/bin/clipdeck` launches the separately installed Archfleet helper
+at `~/.local/share/archfleet/clipdeck.py`. Its source of truth and Windows desktop
+bridge live in `C:\Users\mediaserver\home-network` on home-server. Keep both Arch
+installations updated from there; the helper uses existing SSH aliases and the
+same-user Windows named pipe, without another network listener or cloud sync.
+The overlay stores only its visible previews temporarily in the private runtime
+directory while open. Clipboard contents and credentials stay out of this repo.
 
 ## Discord / Vesktop theme
 

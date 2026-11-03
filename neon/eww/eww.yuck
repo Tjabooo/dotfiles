@@ -38,3 +38,43 @@
         (keycol :groups c)))
     (label :class "hint" :xalign 0
            :text "labels come from the -- comments on hl.bind lines in hyprland.lua")))
+
+;; ── clipboard picker (SUPER+V) ───────────────────────────────────────────────
+;; Filled by `clipdeck` (part of Archfleet): both Arch histories and Windows history over SSH.
+;; Same look as the keybind sheet; the "clip" submap binds the keys.
+(deflisten clipdeck
+  :initial '{"open":false,"cols":[]}'
+  `$HOME/.local/bin/clipdeck stream`)
+
+(defwidget clipcol [c]
+  (box :class "deck-group clipdeck-col" :orientation "v" :space-evenly false
+    (box :space-evenly false :spacing 8
+      (label :class "deck-gname clipdeck-name" :xalign 0 :text "${c.name}")
+      (label :class "deck-gname" :xalign 0 :hexpand true :text "${c.kind}"))
+    (label :class "clipdeck-note ${c.state}" :xalign 0 :visible {c.note != ""} :text "${c.note}")
+    (for it in {c.items}
+      (eventbox :class "clipdeck-hit" :cursor "pointer"
+                :onclick "$HOME/.local/bin/clipdeck pick ${it.key} >/dev/null 2>&1 &"
+        (box :class "deck-item" :space-evenly false :spacing 10
+          (label :class "key clipdeck-key" :xalign 0.5 :text "${it.key}")
+          (label :class "deck-label ${it.img ? 'clipdeck-img' : ''}" :xalign 0 :hexpand true
+                 :limit-width 40 :text "${it.label}"))))))
+
+(defwindow clipdeck
+  :monitor 0
+  :geometry (geometry :anchor "center")
+  :stacking "overlay"
+  :exclusive false
+  :focusable false
+  :namespace "clipdeck"
+  (box :class "deck clipdeck" :orientation "v" :space-evenly false
+    (box :class "head" :space-evenly false
+      (label :class "brand-sm" :text "CLIPBOARD")
+      (label :class "count keys-count" :text "${arraylength(clipdeck.cols)} MACHINES")
+      (box :hexpand true)
+      (label :class "hint" :text "KEY OR CLICK COPIES HERE  ·  ESC CLOSE"))
+    (box :class "deck-groups" :space-evenly true :spacing 18
+      (for c in {clipdeck.cols}
+        (clipcol :c c)))
+    (label :class "hint" :xalign 0
+           :text "newest first  ·  Windows history when enabled; current clipboard as fallback")))

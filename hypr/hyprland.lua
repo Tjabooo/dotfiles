@@ -255,7 +255,7 @@ hl.bind("SUPER + I",    hl.dsp.exec_cmd("intellij-idea-ultimate-edition"))  -- I
 hl.bind("SUPER + O",    hl.dsp.exec_cmd("obsidian"))  -- Obsidian
 hl.bind("SUPER + P",    hl.dsp.exec_cmd("parsecd"))  -- Parsec
 hl.bind("SUPER + SHIFT + F23", hl.dsp.exec_cmd("gaiaui"))  -- GAIA UI
-hl.bind("SUPER + V",    hl.dsp.exec_cmd("cliphist list | wofi --dmenu --prompt clipboard | cliphist decode | wl-copy"))  -- clipboard history
+hl.bind("SUPER + V",    hl.dsp.exec_cmd(bin .. "clipdeck show"))  -- clipboard (every machine)
 
 -- Scratchpads
 hl.bind("SUPER + D",         hl.dsp.workspace.toggle_special("discord"))  -- Discord scratchpad
@@ -332,3 +332,22 @@ hl.bind("XF86AudioMicMute",      hl.dsp.exec_cmd(osd .. "mic mute"),   { locked 
 hl.bind("XF86AudioPlay",         hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })  -- play / pause
 hl.bind("XF86AudioNext",         hl.dsp.exec_cmd("playerctl next"),        { locked = true })  -- next track
 hl.bind("XF86AudioPrev",         hl.dsp.exec_cmd("playerctl previous"),    { locked = true })  -- previous track
+
+-- >>> clipdeck
+-- clipboard picker (SUPER+V): `clipdeck show` opens the overlay, then enters this submap.
+-- Each entry's key copies it here; Esc / Enter / SUPER+V / any other key close it.
+local clipdeck = HOME .. "/.local/bin/clipdeck "
+local function clip_close()
+    hl.exec_cmd(clipdeck .. "hide")
+    hl.dispatch(hl.dsp.submap("reset"))
+end
+hl.define_submap("clip", function()
+    for k in ("1234567890QWERTYUIOPASDFGHJKL"):gmatch(".") do
+        hl.bind(k, hl.dsp.exec_cmd(clipdeck .. "pick " .. k))
+    end
+    hl.bind("Escape", clip_close)
+    hl.bind("Return", clip_close)
+    hl.bind("SUPER + V", clip_close)
+    hl.bind("catchall", clip_close)  -- any other key closes it too: the submap can never trap you
+end)
+-- <<< clipdeck

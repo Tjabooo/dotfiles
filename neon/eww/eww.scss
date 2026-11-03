@@ -46,3 +46,13 @@ $pink:   #f15bb5;
 .keys-col    { min-width: 210px; }
 .keys-group  { min-width: 210px; }
 .keys-key    { min-width: 64px; font-size: 11px; }
+
+// clipboard picker (SUPER+V, clipdeck; reuses the deck classes)
+.clipdeck          { min-width: 1150px; }
+.clipdeck-col      { min-width: 360px; }
+.clipdeck-name     { color: $fg; font-weight: 800; }
+.clipdeck-key      { min-width: 28px; font-size: 11px; }
+.clipdeck-hit:hover .deck-label { color: $violet; }
+.clipdeck-img      { color: $pink; }
+.clipdeck-note     { font-size: 11px; color: $dim; margin: 3px 0; }
+.clipdeck-note.off { color: $pink; }
