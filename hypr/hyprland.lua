@@ -243,6 +243,7 @@ hl.layer_rule({ match = { namespace = "wofi" },   blur = true, ignore_alpha = 0.
 -- KEYBINDS   (the trailing comment is what SUPER+/ shows)
 ------------------------------------------------------------------
 -- Apps
+hl.bind("SUPER + SHIFT + A", hl.dsp.exec_cmd(terminal .. " --class archfleet --title Archfleet -e " .. bin .. "archfleet"))  -- fleet dashboard
 hl.bind("SUPER + T",    hl.dsp.exec_cmd(terminal))  -- terminal
 hl.bind("ALT + RETURN", hl.dsp.exec_cmd("alacritty msg create-window || alacritty"))  -- terminal (fast window)
 hl.bind("SUPER + B",    hl.dsp.exec_cmd(browser))  -- browser
