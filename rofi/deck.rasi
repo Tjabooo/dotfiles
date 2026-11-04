@@ -1,0 +1,163 @@
+/* ~/.config/rofi/deck.rasi — rofi dressed like the eww decks (keybind sheet, clipdeck):
+   square panel, 3px accent bar on top, small bold title + live count, solid key chips.
+   Same file on both machines; the palette comes from colors.rasi. */
+@import "~/.config/rofi/colors.rasi"
+
+* {
+    font:             "JetBrainsMono Nerd Font 10";
+    background-color: transparent;
+    text-color:       @fg;
+    spacing:          0;
+    margin:           0;
+    padding:          0;
+}
+
+window {
+    location:         center;
+    anchor:           center;
+    width:            680px;
+    background-color: @bg-a;
+    border:           3px 0 0 0;
+    border-color:     @accent;
+    border-radius:    0;
+}
+
+mainbox {
+    children:     [ head, inputbar, message, listview, foot ];
+    padding:      14px 16px 12px 16px;
+    spacing:      12px;
+    border:       0 1px 1px 1px;
+    border-color: @line;
+}
+
+/* ── header: TITLE  count/total ............ hints ── */
+head {
+    orientation: horizontal;
+    expand:      false;
+    spacing:     0;
+    children:    [ textbox-brand, num-filtered-rows, textbox-of, num-rows, textbox-fill, textbox-hint ];
+}
+textbox-brand {
+    content: "APPS";
+    expand:  false;
+    font:    "JetBrainsMono Nerd Font ExtraBold 10";
+    text-color: @accent;
+    margin:  0 12px 0 0;
+    vertical-align: 0.5;
+}
+num-filtered-rows, num-rows, textbox-of {
+    expand: false;
+    font:   "JetBrainsMono Nerd Font Bold 8.5";
+    text-color: @accent2;
+    vertical-align: 0.5;
+}
+textbox-of   { content: " / "; text-color: @dim; }
+textbox-fill { content: ""; expand: true; }
+textbox-hint {
+    content: "ENTER RUN  ·  ALT+N PICK  ·  TAB MODE  ·  ESC CLOSE";
+    expand:  false;
+    font:    "JetBrainsMono Nerd Font 7.5";
+    text-color: @dim;
+    vertical-align: 0.5;
+}
+
+/* ── search row: like an eww .unit (panel + 3px accent left edge) ── */
+inputbar {
+    children:         [ prompt, entry ];
+    background-color: @panel;
+    border:           0 0 0 3px;
+    border-color:     @accent;
+    padding:          9px 12px;
+    spacing:          10px;
+}
+prompt {
+    background-color: @accent;
+    text-color:       @bg;
+    font:             "JetBrainsMono Nerd Font ExtraBold 9";
+    padding:          2px 7px;
+    vertical-align:   0.5;
+}
+entry {
+    placeholder:       "type to filter";
+    placeholder-color: @dim;
+    cursor-color:      @accent;
+    cursor-width:      2px;
+    vertical-align:    0.5;
+}
+
+message { background-color: @panel; padding: 8px 12px; border: 0 0 0 3px; border-color: @accent2; }
+textbox { text-color: @fg; font: "JetBrainsMono Nerd Font 9"; }
+
+/* ── list: rows with key chips, selection = panel + accent edge ── */
+listview {
+    lines:        9;
+    columns:      1;
+    fixed-height: true;
+    dynamic:      false;
+    cycle:        true;
+    scrollbar:    false;
+    spacing:      2px;
+}
+element {
+    children:     [ element-index, element-icon, element-text ];
+    orientation:  horizontal;
+    padding:      5px 10px 5px 9px;
+    spacing:      10px;
+    border:       0 0 0 3px;
+    border-color: transparent;
+    cursor:       pointer;
+}
+element selected.normal, element selected.active, element selected.urgent {
+    background-color: @panel;
+    border-color:     @accent;
+}
+element-index {
+    background-color: @line;
+    text-color:       @dim;
+    font:             "JetBrainsMono Nerd Font ExtraBold 8.5";
+    padding:          1px 0;
+    width:            24px;
+    horizontal-align: 0.5;
+    vertical-align:   0.5;
+}
+element-index selected {
+    background-color: @accent;
+    text-color:       @bg;
+}
+element-icon { size: 20px; vertical-align: 0.5; cursor: inherit; }
+element-text {
+    vertical-align: 0.5;
+    cursor:         inherit;
+}
+element-text selected { text-color: @fg; }
+element-text alternate.normal, element-index alternate.normal {}
+element normal.active  element-text { text-color: @accent; }
+element normal.urgent  element-text { text-color: @accent2; }
+
+/* ── footer: like the MAGI panel .foot ── */
+foot {
+    orientation: horizontal;
+    expand:      false;
+    children:    [ mode-switcher, textbox-fill2, textbox-foot ];
+    border:      1px 0 0 0;
+    border-color: @line;
+    padding:     8px 0 0 0;
+}
+textbox-fill2 { content: ""; expand: true; }
+textbox-foot {
+    content: "fuzzy  ·  most used first";
+    expand:  false;
+    font:    "JetBrainsMono Nerd Font 7.5";
+    text-color: @dim;
+    vertical-align: 0.5;
+}
+mode-switcher { expand: false; spacing: 6px; }
+button {
+    font:       "JetBrainsMono Nerd Font Bold 7.5";
+    text-color: @dim;
+    padding:    1px 7px;
+    border:     1px;
+    border-color: @line;
+    cursor:     pointer;
+}
+button selected { background-color: @accent; border-color: @accent; text-color: @bg; }

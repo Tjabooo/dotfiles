@@ -41,7 +41,7 @@
     history_length = 30
     # away from the keyboard for 2 min: notifications stay until you're back
     idle_threshold = 120
-    dmenu = /usr/bin/wofi --dmenu --prompt dunst
+    dmenu = /usr/bin/rofi -dmenu -p GO -theme ~/.config/rofi/power.rasi -theme-str 'textbox-brand { content: "ACTIONS"; }'
     browser = /usr/bin/xdg-open
 
     # left click opens it (e.g. jumps to the Discord message)

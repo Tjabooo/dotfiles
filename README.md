@@ -7,7 +7,7 @@ The desktop lives in `Tjabooo/dotfiles-desktop` ("ember"); this one is for media
 
 | repo path | goes to |
 |---|---|
-| `alacritty/ dunst/ fastfetch/ hypr/ mpv/ neon/ nvim/ ohmyposh/ pacman/ satty/ systemd/ waybar/ wofi/ zed/` | `~/.config/<same>` |
+| `alacritty/ dunst/ fastfetch/ hypr/ mpv/ neon/ nvim/ ohmyposh/ pacman/ satty/ systemd/ rofi/ waybar/ zed/` | `~/.config/<same>` |
 | `vesktop/themes/` | `~/.config/vesktop/themes/` (Vesktop) and `~/.config/Vencord/themes/` (Discord + Vencord) |
 | `mimeapps.list` | `~/.config/mimeapps.list` |
 | `homedir/.zshrc .bashrc .bash_profile` | `~/` |
@@ -114,7 +114,7 @@ desktop: GRUB itself is signed with the sbctl key.
 ## Install on a fresh machine
 
 ```sh
-for d in alacritty dunst fastfetch hypr mpv neon ohmyposh pacman satty systemd waybar wofi zed; do
+for d in alacritty dunst fastfetch hypr mpv neon ohmyposh pacman rofi satty systemd waybar zed; do
   mkdir -p ~/.config/$d && cp -r $d/. ~/.config/$d/
 done
 cp mimeapps.list ~/.config/
@@ -122,7 +122,7 @@ cp -r homedir/. ~/
 systemctl --user daemon-reload
 # packages the config expects:
 sudo pacman -S --needed hyprland hyprlock hypridle hyprpaper hyprshot hyprpolkitagent \
-  xdg-desktop-portal-hyprland waybar dunst wofi satty cliphist wl-clipboard brightnessctl \
+  xdg-desktop-portal-hyprland waybar dunst rofi satty cliphist wl-clipboard brightnessctl \
   playerctl pacman-contrib zoxide pkgfile alacritty kitty yazi mpv ttf-jetbrains-mono-nerd jq
 yay -S eww   # keybind overlay (AUR)
 ```

@@ -1,0 +1,13 @@
+/* ~/.config/rofi/colors.rasi — midnight neon (same values as eww / waybar / dunst) */
+* {
+    bg:      #0f0f1e;
+    bg-a:    #0f0f1e;            /* solid: rofi alpha reads far more see-through than eww */
+    panel:   #1a1a2f;
+    line:    #2a2a45;
+    fg:      #e0e0f0;
+    dim:     #6c6c8a;
+    accent:  #9b5de5;   /* brand, top bar, chips */
+    accent2: #f15bb5;   /* counts, matched letters */
+}
+/* matched letters (highlight can't take a variable) */
+element-text { highlight: bold #f15bb5; }

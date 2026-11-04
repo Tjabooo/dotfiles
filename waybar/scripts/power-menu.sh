@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# ~/.config/waybar/scripts/power-menu.sh  —  wofi power menu (SUPER+Escape / waybar power button)
+# ~/.config/waybar/scripts/power-menu.sh  —  rofi power menu (SUPER+Escape / waybar power button); look: ~/.config/rofi/power.rasi
 options=$'  Lock\n\U000f0904  Suspend\n  Reboot\n  Reboot to Windows\n  Shut down\n\U000f0343  Log out'
 
-choice=$(printf '%s' "$options" | wofi --dmenu --prompt power --width 280 --lines 6 --cache-file /dev/null)
+choice=$(printf '%s' "$options" | rofi -dmenu -i -no-custom -p GO -theme ~/.config/rofi/power.rasi)
 
 case "$choice" in
   *Lock)        pidof hyprlock || hyprlock ;;

@@ -29,7 +29,7 @@ local ON_AC = sysfs("/sys/class/power_supply/AC0/online") ~= "0"
 local terminal = "alacritty"
 local browser  = "firefox"
 local files    = "thunar"
-local launcher = "wofi --show drun"
+local launcher = "rofi -show drun"
 local discord  = "discord"
 local spotify  = "spotify --enable-features=UseOzonePlatform --ozone-platform=wayland"   -- CEF, not Electron: ignores the env hint
 local bin      = HOME .. "/.local/bin/"
@@ -142,7 +142,7 @@ hl.config({
 ------------------------------------------------------------------
 hl.curve("smooth",   { type = "bezier", points = { { 0.25, 1.0 }, { 0.5, 1.0 } } })
 hl.curve("overshot", { type = "bezier", points = { { 0.13, 0.99 }, { 0.29, 1.08 } } })
-hl.curve("snappy",   { type = "spring", mass = 1, stiffness = 80, dampening = 15 })
+hl.curve("snappy",   { type = "spring", mass = 1, stiffness = 80, damping = 15 })
 
 hl.animation({ leaf = "windows",          enabled = true, speed = 4.5, spring = "snappy" })
 hl.animation({ leaf = "windowsIn",        enabled = true, speed = 4,   spring = "snappy", style = "popin 85%" })
@@ -237,13 +237,12 @@ hl.window_rule({
 -- LAYER RULES  (blur behind the bar and launcher)
 ------------------------------------------------------------------
 hl.layer_rule({ match = { namespace = "waybar" }, blur = true, ignore_alpha = 0.3 })
-hl.layer_rule({ match = { namespace = "wofi" },   blur = true, ignore_alpha = 0.3 })
+hl.layer_rule({ match = { namespace = "rofi" },   blur = true, ignore_alpha = 0.3 })
 
 ------------------------------------------------------------------
 -- KEYBINDS   (the trailing comment is what SUPER+/ shows)
 ------------------------------------------------------------------
 -- Apps
-hl.bind("SUPER + SHIFT + A", hl.dsp.exec_cmd(terminal .. " --class archfleet --title Archfleet -e " .. bin .. "archfleet"))  -- fleet dashboard
 hl.bind("SUPER + T",    hl.dsp.exec_cmd(terminal))  -- terminal
 hl.bind("ALT + RETURN", hl.dsp.exec_cmd("alacritty msg create-window || alacritty"))  -- terminal (fast window)
 hl.bind("SUPER + B",    hl.dsp.exec_cmd(browser))  -- browser
@@ -256,6 +255,7 @@ hl.bind("SUPER + O",    hl.dsp.exec_cmd("obsidian"))  -- Obsidian
 hl.bind("SUPER + P",    hl.dsp.exec_cmd("parsecd"))  -- Parsec
 hl.bind("SUPER + SHIFT + F23", hl.dsp.exec_cmd("gaiaui"))  -- GAIA UI
 hl.bind("SUPER + V",    hl.dsp.exec_cmd(bin .. "clipdeck show"))  -- clipboard (every machine)
+hl.bind("SUPER + SHIFT + A", hl.dsp.exec_cmd(terminal .. " --class archfleet --title Archfleet -e " .. bin .. "archfleet"))  -- fleet dashboard
 
 -- Scratchpads
 hl.bind("SUPER + D",         hl.dsp.workspace.toggle_special("discord"))  -- Discord scratchpad

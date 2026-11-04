@@ -1,0 +1,10 @@
+/* ~/.config/rofi/power.rasi — power menu (SUPER+Escape / waybar power button): the deck, smaller */
+@import "~/.config/rofi/deck.rasi"
+
+window        { width: 400px; }
+mainbox       { children: [ head, inputbar, listview ]; }
+head          { children: [ textbox-brand, textbox-fill, textbox-hint ]; }
+textbox-brand { content: "POWER"; }
+textbox-hint  { content: "ENTER  ·  ALT+N  ·  ESC"; }
+listview      { lines: 6; }
+element       { children: [ element-index, element-text ]; }
