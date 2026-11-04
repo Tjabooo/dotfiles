@@ -23,9 +23,7 @@ menuentry 'Arch Linux' --class arch --class gnu-linux --class gnu --class os \$m
 	insmod part_gpt
 	insmod fat
 	search --no-floppy --fs-uuid --set=root ${BOOT_UUID}
-	echo	'Loading Linux ...'
 	linux	/vmlinuz-linux root=UUID=${ROOT_UUID} rw ${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}
-	echo	'Loading initial ramdisk ...'
 	initrd	${ucode}/initramfs-linux.img
 }
 menuentry 'Windows 11' --class windows --class os \$menuentry_id_option 'windows-11' {

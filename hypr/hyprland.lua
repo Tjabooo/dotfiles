@@ -66,8 +66,16 @@ hl.env("QT_QPA_PLATFORM", "wayland;xcb")
 -- Daemons (waybar, dunst, hypridle, hyprpaper, cliphist, polkit agent, neon-power) are systemd
 -- user units in ~/.config/systemd/user/neon-session.target: they restart when they crash and
 -- their logs are in `journalctl --user -u <name>`.
+-- unit-01 handoff: Plymouth ends on solid #0f0f1e, Hyprland starts on it (misc.background_color),
+-- and scripts/unit01-handoff.py covers the screens in it at once, plays the unit-01 session link,
+-- runs hyprlock when tty1 logged in by itself (the real password prompt), then dissolves hex by
+-- hex into the desktop. The session (waybar, wallpaper, ...) waits behind the overlay so nothing
+-- flashes before it.
+local handoff = os.getenv("HOME") .. "/.config/hypr/scripts/unit01-handoff.py"
+hl.layer_rule({ match = { namespace = "^unit01-handoff$" }, no_anim = true })
 hl.on("hyprland.start", function()
-    hl.exec_cmd("sh -c 'dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE ELECTRON_OZONE_PLATFORM_HINT QT_QPA_PLATFORM && systemctl --user restart neon-session.target'")
+    hl.exec_cmd(handoff .. " --lock")
+    hl.exec_cmd(handoff .. " --wait -- \"dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE ELECTRON_OZONE_PLATFORM_HINT QT_QPA_PLATFORM && systemctl --user restart neon-session.target\"")
     -- Spotify + Discord live in scratchpads (SUPER+M / SUPER+D) and launch on first toggle.
 end)
 hl.on("hyprland.shutdown", function()
@@ -123,6 +131,7 @@ hl.config({
         disable_hyprland_logo    = true,
         disable_splash_rendering = true,
         force_default_wallpaper  = 0,
+        background_color         = "rgb(0f0f1e)",   -- = the Plymouth splash's last frame (unit-01 handoff)
         mouse_move_enables_dpms  = true,
         key_press_enables_dpms   = true,
         middle_click_paste       = false,   -- same as the desktop; set true to get X11-style middle-click paste back

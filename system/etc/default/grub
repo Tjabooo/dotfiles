@@ -3,7 +3,7 @@
 GRUB_DEFAULT=saved   # needed for grub-reboot (power menu "Reboot to Windows")
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR="Arch"
-GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=0 systemd.gpt_auto=0"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash loglevel=0 systemd.gpt_auto=0 vt.default_red=15,255,129,255,138,155,92,186,74,255,165,255,169,241,139,224 vt.default_grn=15,107,199,195,168,93,207,187,74,143,214,216,189,91,233,224 vt.default_blu=30,129,132,113,255,229,230,241,106,163,167,155,255,181,253,240"
 GRUB_CMDLINE_LINUX=""
 
 # Preload both GPT and MBR modules so that they are not missed

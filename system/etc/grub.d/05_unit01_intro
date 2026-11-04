@@ -1,0 +1,6 @@
+#!/bin/sh
+# unit-01 activation intro (~/.local/share/neon/grub-theme/install.sh): plays before the menu.
+# $root is the ESP here (00_header's last search), where the theme lives.
+cat <<'CFG'
+if [ -f ($root)/grub/themes/magi-neon/intro.cfg ]; then source ($root)/grub/themes/magi-neon/intro.cfg; fi
+CFG

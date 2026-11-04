@@ -118,13 +118,59 @@ desktop: GRUB itself is signed with the sbctl key.
   stock `linux` kernel: add an entry there if you install another one.
 - Windows chainloads the **sbctl-signed** copy at `/EFI/WindowsChain/bootmgfw.efi`
   (Microsoft's own loader would be refused). os-prober is off.
-- Theme "magi-neon": `homedir/.local/share/neon/grub-theme/build.py` (port of the desktop's ember
-  "magi" theme, midnight neon, drawn for 2880x1800). Rebuild + install:
-  `python3 build.py && sudo cp -r magi-neon /boot/grub/themes/ && sudo grub-mkconfig -o /boot/grub/grub.cfg`
+- Theme "magi-neon": `homedir/.local/share/neon/grub-theme/build.py` (sibling of the desktop's ember
+  "magi" theme, midnight neon, drawn for 2880x1800). The left half is the **EVA unit-01 activation
+  board**: sync-ratio ring (初号機, 41.3 %), ENTRY PLUG / LCL / A10 NERVE / UMBILICAL status units,
+  harmonics traces. See the boot sequence below for how to install it.
 - `grub-promote.service`: one-shot, moved GRUB to the front of the firmware boot order after its
   first successful boot (done; it disabled itself). systemd-boot stays installed as the fallback.
 
 ![GRUB theme](homedir/.local/share/neon/grub-theme/preview.png)
+
+### Boot sequence: unit-01 activation
+
+One continuous animation from firmware to desktop, the laptop's version of the desktop's MAGI boot.
+Every stage starts on the exact pixels the previous one ended on.
+
+1. **GRUB intro** (`grub-theme/intro.py`, ~6.5 s): the board powers up before the menu: the frame
+   draws in, the card opens on 起動 ACTIVATION, the sync ring sweeps in, ENTRY PLUG → LCL →
+   A10 NERVE → UMBILICAL each flash solid green 起動 and stamp 正常 while the sync ratio climbs,
+   the harmonics lock together at 41.3 %, and the card becomes the boot menu. GRUB flips 28
+   full-screen PNGs (`background_image` + `clear`, silent `play` notes as millisecond pauses).
+   Hold **Shift** to skip it; any key fast-forwards.
+2. **Plymouth splash** "unit01" (`plymouth-theme/build.py`, ~18 s): frame 0 is GRUB's background.
+   A launch log fills the empty card, the board fades out, and a NERV emblem builds (leaf wipe with
+   a green edge, NERV flicker). Then 逃げちゃダメだ is typed three times, followed by "I mustn't
+   run away.". After that comes a synchronization test: the pilot `tjabo` is typed, the sync ratio
+   climbs to 41.3 %, LCL / A10 NERVE / HARMONICS go 正常, and the panel reads EVA-01 ACTIVATED.
+   The unit-01 art (`hypr/wallpapers/eva_lock4.jpg`, also the lock screen) rises behind
+   "WELCOME, TJABO / おかえりなさい · 発進", and everything fades to #0f0f1e.
+   `unit01-splash-hold.service` holds the boot until the animation has finished.
+3. **Handoff** (`hypr/scripts/unit01-handoff.py`): tty1 autologs in and execs Hyprland, which
+   starts on the same #0f0f1e. An overlay plays the 接続 UNIT-01 SESSION LINK. The power chip reads
+   the battery: 外部 on AC; on battery it shows 内部 and the time left as the Eva's ACTIVE TIME. Then
+   it runs **hyprlock**, so the laptop still asks for the password, and after the unlock it dissolves
+   hex by hex into the desktop.
+
+Install (build as your user, then the two installers; both back up what they change to
+`/var/backups/unit01-boot/` and can undo):
+
+```sh
+cd ~/.local/share/neon/grub-theme && python3 build.py && python3 intro.py && sudo ./install.sh
+cd ../plymouth-theme && python3 build.py && sudo ./install.sh
+cat zprofile-tty1.zsh >> ~/.zprofile      # tty1 execs start-hyprland
+```
+
+- The GRUB installer copies the theme to `/boot/grub/themes/magi-neon`, writes
+  `/etc/grub.d/05_unit01_intro` and drops the "Loading …" echoes from `10_neon`.
+  `--no-intro` removes the intro.
+- The Plymouth installer adds the `plymouth` package and the theme. It also adds `plymouth` after
+  `systemd` in the mkinitcpio HOOKS, plus `splash` and a neon console palette (`vt.default_*`,
+  colour 0 = #0f0f1e) on the kernel command line. Finally it sets up the tty1 autologin drop-in and
+  the hold service. `--remove` undoes all of it.
+- Nothing new goes into the signed `grubx64.efi`: png, play, gfxterm_background, keystatus and
+  configfile are already in `grub-install-signed`'s module list.
+- Check the timing after a boot with `journalctl -b -u unit01-splash-hold`.
 
 ## Install on a fresh machine
 
