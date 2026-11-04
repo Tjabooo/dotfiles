@@ -186,10 +186,20 @@ hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 ------------------------------------------------------------------
 -- SCRATCHPADS  (summon over whatever you're watching/coding)
 ------------------------------------------------------------------
-hl.workspace_rule({ workspace = "special:discord", on_created_empty = discord,  gaps_out = 60 })
-hl.workspace_rule({ workspace = "special:music",   on_created_empty = spotify,  gaps_out = 80 })
-hl.workspace_rule({ workspace = "special:term",    on_created_empty = terminal, gaps_out = 80 })
-hl.workspace_rule({ workspace = "special:files",   on_created_empty = "kitty --class yazi-scratch -e yazi", gaps_out = 80 })
+local scratchpads = {
+    ["special:discord"] = { cmd = discord,  gaps = 60 },
+    ["special:music"]   = { cmd = spotify,  gaps = 80 },
+    ["special:term"]    = { cmd = terminal, gaps = 80 },
+    ["special:files"]   = { cmd = "kitty --class yazi-scratch -e yazi", gaps = 80 },
+}
+for name, pad in pairs(scratchpads) do
+    hl.workspace_rule({ workspace = name, gaps_out = pad.gaps })
+end
+-- launch the app when its scratchpad is summoned empty
+hl.on("workspace.created", function(ws)
+    local pad = scratchpads[ws.name] or scratchpads["special:" .. ws.name]
+    if pad and ws.is_empty then hl.exec_cmd(pad.cmd) end
+end)
 
 ------------------------------------------------------------------
 -- WINDOW RULES
