@@ -7,7 +7,7 @@ The desktop lives in `Tjabooo/dotfiles-desktop` ("ember"); this one is for media
 
 | repo path | goes to |
 |---|---|
-| `alacritty/ dunst/ fastfetch/ hypr/ mpv/ neon/ ohmyposh/ pacman/ satty/ systemd/ waybar/ wofi/ zed/` | `~/.config/<same>` |
+| `alacritty/ dunst/ fastfetch/ hypr/ mpv/ neon/ nvim/ ohmyposh/ pacman/ satty/ systemd/ waybar/ wofi/ zed/` | `~/.config/<same>` |
 | `vesktop/themes/` | `~/.config/vesktop/themes/` (Vesktop) and `~/.config/Vencord/themes/` (Discord + Vencord) |
 | `mimeapps.list` | `~/.config/mimeapps.list` |
 | `homedir/.zshrc .bashrc .bash_profile` | `~/` |
