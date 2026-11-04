@@ -46,7 +46,7 @@ window#waybar.hidden {
 
 /* ── Shared module look ──────────────────────────────────── */
 #custom-launcher, #workspaces, #mpris, #clock, #custom-updates, #custom-house, #tray,
-#idle_inhibitor, #cpu, #memory, #backlight, #pulseaudio, #language,
+#custom-awake, #cpu, #memory, #backlight, #pulseaudio, #language,
 #network, #battery, #custom-power {
     padding: 0 10px;
     margin: 5px 2px;
@@ -56,7 +56,7 @@ window#waybar.hidden {
     transition: background 200ms ease, color 200ms ease;
 }
 
-#mpris:hover, #clock:hover, #custom-updates:hover, #custom-house:hover, #idle_inhibitor:hover,
+#mpris:hover, #clock:hover, #custom-updates:hover, #custom-house:hover, #custom-awake:hover,
 #cpu:hover, #memory:hover, #backlight:hover, #pulseaudio:hover,
 #language:hover, #network:hover, #battery:hover {
     background: alpha(@violet, 0.16);
@@ -130,11 +130,11 @@ window#waybar.hidden {
     color: @pink;
 }
 
-#idle_inhibitor {
+#custom-awake {
     color: @subtext;
 }
 
-#idle_inhibitor.activated {
+#custom-awake.activated {
     color: #ffffff;
     background: linear-gradient(135deg, @violet, @pink);
 }

@@ -1,0 +1,49 @@
+#!/bin/bash
+# Session-wide Waybar wake toggle. State belongs to systemd, not a bar/output.
+set -euo pipefail
+unit=screen-awake.service
+runtime=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+
+active() { systemctl --user --quiet is-active "$unit"; }
+wake() {
+    if command -v wlopm >/dev/null; then
+        wlopm --on '*'
+    else
+        hyprctl dispatch 'hl.dsp.dpms({ action = "on" })' >/dev/null
+    fi
+}
+blank() {
+    # ember-afk deliberately ignores all inhibitors for real-input detection.
+    # Only its screen-off action must yield to the manual wake toggle.
+    if ! active; then wlopm --off '*'; fi
+}
+
+case ${1:-status} in
+    status)
+        if active; then
+            printf '%s\n' '{"text":"","class":"activated","tooltip":"Stay awake ON · click for normal idle\nPrevents automatic dimming, lock, OLED blanking and idle suspend"}'
+        else
+            printf '%s\n' '{"text":"","class":"deactivated","tooltip":"Normal idle · click to stay awake\nAutomatic dimming, lock and OLED blanking enabled"}'
+        fi
+        exit 0 ;;
+    toggle|on|off|blank) ;;
+    *) echo 'Usage: screen-awake [status|toggle|on|off|blank]' >&2; exit 2 ;;
+esac
+
+# Multiple bars and AFK timeouts may act at once. Serialize their changes.
+exec 9>"$runtime/screen-awake.lock"
+flock 9
+action=$1
+if [[ $action == toggle ]]; then
+    if active; then action=off; else action=on; fi
+fi
+case $action in
+    on)
+        systemctl --user start "$unit"
+        wake ;;
+    off)
+        systemctl --user stop "$unit"
+        # If AFK's timeout passed while awake, restore OLED protection now.
+        if [[ -e $runtime/ember-afk-idle-screen ]]; then blank; fi ;;
+    blank) blank ;;
+esac

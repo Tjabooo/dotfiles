@@ -1,0 +1,11 @@
+# Started only by the Waybar wake toggle; resets when the session ends.
+[Unit]
+Description=Keep screens awake (Waybar)
+PartOf=graphical-session.target neon-session.target
+After=graphical-session.target
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/systemd-inhibit --what=idle --mode=block --who=screen-awake --why=Waybar-wake-toggle /usr/bin/sleep infinity
+Restart=on-failure
+RestartSec=1

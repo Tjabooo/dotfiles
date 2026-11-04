@@ -11,7 +11,7 @@
 
   "modules-left":   ["custom/launcher", "hyprland/workspaces", "mpris"],
   "modules-center": ["clock"],
-  "modules-right":  ["custom/updates", "custom/house", "tray", "idle_inhibitor", "group/stats",
+  "modules-right":  ["custom/updates", "custom/house", "tray", "custom/awake", "group/stats",
                      "backlight", "pulseaudio", "hyprland/language", "network",
                      "battery", "custom/power"],
 
@@ -80,11 +80,13 @@
 
   "tray": { "icon-size": 16, "spacing": 10 },
 
-  "idle_inhibitor": {
-    "format": "{icon}",
-    "format-icons": { "activated": "", "deactivated": "" },
-    "tooltip-format-activated": "Staying awake",
-    "tooltip-format-deactivated": "Normal idle"
+  "custom/awake": {
+    "exec": "~/.local/bin/screen-awake status",
+    "return-type": "json",
+    "interval": 2,
+    "on-click": "~/.local/bin/screen-awake toggle",
+    "exec-on-event": true,
+    "tooltip": true
   },
 
   "group/stats": {

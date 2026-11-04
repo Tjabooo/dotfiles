@@ -11,7 +11,7 @@ The desktop lives in `Tjabooo/dotfiles-desktop` ("ember"); this one is for media
 | `vesktop/themes/` | `~/.config/vesktop/themes/` (Vesktop) and `~/.config/Vencord/themes/` (Discord + Vencord) |
 | `mimeapps.list` | `~/.config/mimeapps.list` |
 | `homedir/.zshrc .bashrc .bash_profile` | `~/` |
-| `homedir/.local/bin/neon-*`, `homedir/.local/bin/codex`, `homedir/.local/bin/clipdeck` | `~/.local/bin/` |
+| `homedir/.local/bin/neon-*`, `homedir/.local/bin/codex`, `homedir/.local/bin/clipdeck`, `homedir/.local/bin/screen-awake` | `~/.local/bin/` |
 | `homedir/.local/share/neon/` | `~/.local/share/neon/` (system-fixes.sh, GRUB theme builder, 10_neon source) |
 | `system/etc/…`, `system/usr/local/bin/…` | the same paths under `/` (root-owned; copy with sudo) |
 
@@ -28,6 +28,9 @@ units, so they restart when they crash and log to `journalctl --user -u <name>`.
 - **neon-power**: on plug / unplug it reloads Hyprland; `hyprland.lua` reads `AC0/online`
   when it loads → 120 Hz + full blur/shadows on AC, 60 Hz + light blur on battery.
   Low-battery notifications at 15 % and 7 %.
+- **Waybar wake eye**: click to keep screens awake (no automatic dim, lock, OLED blanking or idle suspend).
+  Click again for normal idle. Uses `screen-awake.service`; survives bar restarts and resets at logout.
+  Manual lock, suspend and lid handling keep working.
 - **hypridle**: dim (restores *your* brightness) → lock → screen off → suspend on battery only.
 - **neon-osd**: volume / brightness / mic keys with an on-screen bar (dunst).
 - **neon-shot**: Print-key screenshots via hyprshot → satty; `SUPER+Print` re-edits the last one.
