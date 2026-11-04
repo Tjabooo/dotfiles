@@ -50,7 +50,8 @@
   (box :class "deck-group clipdeck-col" :orientation "v" :space-evenly false
     (box :space-evenly false :spacing 8
       (label :class "deck-gname clipdeck-name" :xalign 0 :text "${c.name}")
-      (label :class "deck-gname" :xalign 0 :hexpand true :text "${c.kind}"))
+      (label :class "deck-gname" :xalign 0 :hexpand true :text "${c.kind}")
+      (label :class "deck-gname clipdeck-span" :xalign 1 :visible {c.span != ""} :text "${c.span}"))
     (label :class "clipdeck-note ${c.state}" :xalign 0 :visible {c.note != ""} :text "${c.note}")
     (for it in {c.items}
       (eventbox :class "clipdeck-hit" :cursor "pointer"
@@ -67,14 +68,23 @@
   :exclusive false
   :focusable false
   :namespace "clipdeck"
+  (eventbox :onscroll "$HOME/.local/bin/clipdeck page {} >/dev/null 2>&1 &"
   (box :class "deck clipdeck" :orientation "v" :space-evenly false
     (box :class "head" :space-evenly false
       (label :class "brand-sm" :text "CLIPBOARD")
       (label :class "count keys-count" :text "${arraylength(clipdeck.cols)} MACHINES")
+      (box :class "clipdeck-pager" :space-evenly false :spacing 6 :visible {clipdeck.pages > 1}
+        (eventbox :class "clipdeck-hit" :cursor "pointer"
+                  :onclick "$HOME/.local/bin/clipdeck page prev >/dev/null 2>&1 &"
+          (label :class "key clipdeck-key ${clipdeck.page > 1 ? '' : 'clipdeck-off'}" :text "←"))
+        (label :class "count clipdeck-page" :text "PAGE ${clipdeck.page} / ${clipdeck.pages}")
+        (eventbox :class "clipdeck-hit" :cursor "pointer"
+                  :onclick "$HOME/.local/bin/clipdeck page next >/dev/null 2>&1 &"
+          (label :class "key clipdeck-key ${clipdeck.page < clipdeck.pages ? '' : 'clipdeck-off'}" :text "→")))
       (box :hexpand true)
-      (label :class "hint" :text "KEY OR CLICK COPIES HERE  ·  ESC CLOSE"))
+      (label :class "hint" :text "KEY OR CLICK COPIES HERE  ·  ← → / SCROLL PAGES  ·  ESC CLOSE"))
     (box :class "deck-groups" :space-evenly true :spacing 18
       (for c in {clipdeck.cols}
         (clipcol :c c)))
     (label :class "hint" :xalign 0
-           :text "newest first  ·  Windows history when enabled; current clipboard as fallback")))
+           :text "newest first  ·  Windows history when enabled (keeps 25); current clipboard as fallback"))))

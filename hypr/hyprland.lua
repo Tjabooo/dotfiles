@@ -354,7 +354,7 @@ hl.bind("XF86AudioPrev",         hl.dsp.exec_cmd("playerctl previous"),    { loc
 
 -- >>> clipdeck
 -- clipboard picker (SUPER+V): `clipdeck show` opens the overlay, then enters this submap.
--- Each entry's key copies it here; Esc / Enter / SUPER+V / any other key close it.
+-- Each entry's key copies it here; ←/→, PgUp/PgDn, Home/End flip pages; Esc / Enter / SUPER+V / any other key close it.
 local clipdeck = HOME .. "/.local/bin/clipdeck "
 local function clip_close()
     hl.exec_cmd(clipdeck .. "hide")
@@ -363,6 +363,10 @@ end
 hl.define_submap("clip", function()
     for k in ("1234567890QWERTYUIOPASDFGHJKL"):gmatch(".") do
         hl.bind(k, hl.dsp.exec_cmd(clipdeck .. "pick " .. k))
+    end
+    -- flip every column a page (held keys repeat); the same keys then pick from that page
+    for key, dir in pairs({ Right = "next", Left = "prev", Next = "next", Prior = "prev", Home = "first", End = "last" }) do
+        hl.bind(key, hl.dsp.exec_cmd(clipdeck .. "page " .. dir), { repeating = true })
     end
     hl.bind("Escape", clip_close)
     hl.bind("Return", clip_close)

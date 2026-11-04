@@ -56,3 +56,7 @@ $pink:   #f15bb5;
 .clipdeck-img      { color: $pink; }
 .clipdeck-note     { font-size: 11px; color: $dim; margin: 3px 0; }
 .clipdeck-note.off { color: $pink; }
+.clipdeck-pager    { margin-left: 18px; }
+.clipdeck-page     { margin: 0 2px; }
+.clipdeck-span     { color: $violet; }
+.key.clipdeck-off  { background-color: $line; color: $dim; }
