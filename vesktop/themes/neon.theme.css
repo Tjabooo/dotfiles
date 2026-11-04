@@ -2,7 +2,7 @@
  * @name midnight neon
  * @description unit-01's navy, violet and pink palette, adapted from Ember. Built on midnight by refact0r.
  * @author Oliver Westin
- * @version 1.0.0
+ * @version 1.1.0
  * @source https://github.com/refact0r/midnight-discord
  */
 
@@ -14,13 +14,13 @@ body {
     --code-font: 'JetBrainsMono Nerd Font';
     font-weight: 400;
 
-    /* Ember's compact layout, with the laptop's rounded islands. */
+    /* Ember's compact layout, square like the neon eww decks, Waybar and rofi. */
     --gap: 10px;
     --divider-thickness: 3px;
     --border-thickness: 1px;
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 12px;
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
 
     --animations: on;
     --list-item-transition: 0.2s ease;
@@ -34,16 +34,16 @@ body {
     --custom-window-controls: off;
     --window-control-size: 14px;
 
-    /* Same violet-to-pink gradient as Waybar's launcher and workspaces. */
+    /* Solid violet, like the Waybar launcher chip and the eww key chips. */
     --custom-dms-icon: custom;
     --dms-icon-svg-url: url('https://refact0r.github.io/midnight-discord/assets/Font_Awesome_5_solid_moon.svg');
     --dms-icon-svg-size: 85%;
-    --dms-icon-color-before: var(--text-1);
-    --dms-icon-color-after: var(--text-1);
+    --dms-icon-color-before: var(--text-0);
+    --dms-icon-color-after: var(--text-0);
     --custom-dms-background: color;
     --dms-background-image-url: url('');
     --dms-background-image-size: cover;
-    --dms-background-color: linear-gradient(135deg, #9b5de5, #f15bb5);
+    --dms-background-color: #9b5de5;
 
     /* Hyprland already applies window opacity and blur to Discord/Vesktop. */
     --background-image: off;

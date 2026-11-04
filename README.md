@@ -15,6 +15,21 @@ The desktop lives in `Tjabooo/dotfiles-desktop` ("ember"); this one is for media
 | `homedir/.local/share/neon/` | `~/.local/share/neon/` (system-fixes.sh, GRUB theme builder, 10_neon source) |
 | `system/etc/…`, `system/usr/local/bin/…` | the same paths under `/` (root-owned; copy with sudo) |
 
+## Look: the deck style
+
+Everything shares the look of the eww overlays (`neon/eww`): square panels, a 3px violet bar on
+top, small bold uppercase tags in dim grey, solid violet "key" chips, and hover/selection shown as
+the panel colour plus a 3px accent edge on the left.
+
+- **Waybar**: three square islands; workspaces are key chips (violet = active, line grey = has windows);
+  modules read `CPU 3%  BRT 40%  VOL 42%  NET …  BAT 80%`; the date sits next to the clock as a tag
+  (`custom/date`, because Waybar's clock can't uppercase). Tooltips and tray menus are small decks.
+- **rofi** (`rofi/deck.rasi`, `power.rasi`, `actions.rasi` for dunst's action picker).
+- **dunst**: square, 1px frame (violet normal, pink critical), app name as a violet tag above the title.
+- **hyprlock**: the password field sits in a deck card (`LOCKED  HOSTNAME`, key hints underneath).
+- **Hyprland**: square windows, solid violet border on the focused one.
+- **Discord** (`vesktop/themes/neon.theme.css`): square panels, solid violet home chip.
+
 ## How the session starts
 
 `hypr/hyprland.lua` (Hyprland 0.55+ Lua config) runs `systemctl --user restart neon-session.target`

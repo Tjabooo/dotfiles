@@ -1,4 +1,5 @@
-// ~/.config/waybar/config  —  floating "islands" layout
+// ~/.config/waybar/config  —  "deck" islands: square panels, violet top bar, small uppercase tags;
+// the same look as the eww overlays (neon/eww) and rofi (rofi/deck.rasi)
 {
   "layer": "top",
   "position": "top",
@@ -10,7 +11,7 @@
   "reload_style_on_change": true,
 
   "modules-left":   ["custom/launcher", "hyprland/workspaces", "mpris"],
-  "modules-center": ["clock"],
+  "modules-center": ["clock", "custom/date"],
   "modules-right":  ["custom/updates", "custom/house", "tray", "custom/awake", "group/stats",
                      "backlight", "pulseaudio", "hyprland/language", "network",
                      "battery", "custom/power"],
@@ -23,7 +24,12 @@
   },
 
   "hyprland/workspaces": {
-    "format": "{name}",
+    "format": "{icon}",
+    // scratchpads read like deck tags; anything not listed shows its own name
+    "format-icons": {
+      "discord": "DISCORD", "music": "MUSIC", "term": "TERM", "files": "FILES",
+      "special:discord": "DISCORD", "special:music": "MUSIC", "special:term": "TERM", "special:files": "FILES"
+    },
     "show-special": true,
     "persistent-workspaces": { "*": 5 },
     "on-scroll-up": "hyprctl dispatch workspace e-1",
@@ -31,8 +37,8 @@
   },
 
   "mpris": {
-    "format": "<span color='#9b5de5'>{player_icon}</span>  {dynamic}",
-    "format-paused": "<span color='#6c6c8a'>{status_icon}</span>  <i>{dynamic}</i>",
+    "format": "<span size='8pt' weight='800' color='#9b5de5'>NOW</span>  {dynamic}",
+    "format-paused": "<span size='8pt' weight='800' color='#6c6c8a'>PAUSED</span>  <i>{dynamic}</i>",
     "dynamic-order": ["title", "artist"],
     "dynamic-len": 32,
     "player-icons": { "default": "󰎆", "spotify": "", "firefox": "" },
@@ -43,25 +49,32 @@
   },
 
   "clock": {
-    "format": "<span color='#9b5de5'></span>  {:%H:%M}",
-    "format-alt": "<span color='#9b5de5'></span>  {:%a %d %b  %H:%M:%S}",
+    "format": "<span weight='800'>{:%H:%M}</span>",
+    "format-alt": "<span weight='800'>{:%H:%M</span><span weight='800' color='#f15bb5'>:%S}</span>",
     "interval": 1,
     "tooltip-format": "<tt><small>{calendar}</small></tt>",
     "calendar": {
       "mode": "month",
       "weeks-pos": "left",
       "format": {
-        "months":   "<span color='#babbf1'><b>{}</b></span>",
+        "months":   "<span color='#9b5de5'><b>{}</b></span>",
         "weeks":    "<span color='#6c6c8a'>W{}</span>",
-        "weekdays": "<span color='#9b5de5'><b>{}</b></span>",
+        "weekdays": "<span color='#6c6c8a'><b>{}</b></span>",
         "today":    "<span color='#f15bb5'><b><u>{}</u></b></span>"
       }
     }
   },
 
+  // uppercase date tag next to the clock (waybar's clock formatter has no %^a)
+  "custom/date": {
+    "exec": "LC_TIME=C date +'%^a %d %^b  W%V'",
+    "interval": 60,
+    "tooltip": false
+  },
+
   "custom/updates": {
     "exec": "~/.config/waybar/scripts/updates.sh",   // cached + locked; needs pacman-contrib
-    "format": "<span color='#f15bb5'>󰚰</span>  {}",
+    "format": "<span size='8pt' weight='800' color='#6c6c8a'>UPD</span>  <span weight='800' color='#f15bb5'>{}</span>",
     "interval": 1800,
     "signal": 8,
     "tooltip": false,
@@ -78,7 +91,7 @@
     "tooltip": true
   },
 
-  "tray": { "icon-size": 16, "spacing": 10 },
+  "tray": { "icon-size": 15, "spacing": 10 },
 
   "custom/awake": {
     "exec": "~/.local/bin/screen-awake status",
@@ -94,23 +107,23 @@
     "drawer": { "transition-duration": 300, "transition-left-to-right": false },
     "modules": ["cpu", "memory"]
   },
-  "cpu":    { "interval": 2, "format": "<span color='#9b5de5'></span>  {usage}%" },
+  "cpu":    { "interval": 2, "format": "<span size='8pt' weight='800' color='#6c6c8a'>CPU</span>  {usage}%" },
   "memory": {
     "interval": 5,
-    "format": "<span color='#9b5de5'>󰍛</span>  {used:0.1f}G",
+    "format": "<span size='8pt' weight='800' color='#6c6c8a'>MEM</span>  {used:0.1f}G",
     "tooltip-format": "{used:0.1f}G / {total:0.1f}G used"
   },
 
   "backlight": {
-    "format": "<span color='#9b5de5'></span>  {percent}%",
+    "format": "<span size='8pt' weight='800' color='#6c6c8a'>BRT</span>  {percent}%",
     "tooltip": false,
     "on-scroll-up": "brightnessctl -q set 5%+",
     "on-scroll-down": "brightnessctl -q --min-value=1% set 5%-"
   },
 
   "pulseaudio": {
-    "format": "<span color='#9b5de5'>{icon}</span>  {volume}%",
-    "format-muted": "<span color='#ff5252'>󰝟</span>  muted",
+    "format": "<span size='8pt' weight='800' color='#6c6c8a'>VOL</span>  {volume}%",
+    "format-muted": "<span size='8pt' weight='800'>VOL</span>  MUTED",
     "format-icons": { "default": ["", "", ""] },
     "scroll-step": 5,
     "tooltip": false,
@@ -119,16 +132,16 @@
   },
 
   "hyprland/language": {
-    "format": "<span color='#9b5de5'></span>  {}",
+    "format": "<span size='8pt' weight='800' color='#6c6c8a'>KB</span>  {}",
     "format-en": "US",
     "format-sv": "SE",
     "keyboard-name": "at-translated-set-2-keyboard"
   },
 
   "network": {
-    "format-wifi": "<span color='#9b5de5'></span>  {essid}",
-    "format-ethernet": "<span color='#9b5de5'>󰈀</span>  wired",
-    "format-disconnected": "<span color='#ff5252'>󰤭</span>  offline",
+    "format-wifi": "<span size='8pt' weight='800' color='#6c6c8a'>NET</span>  {essid}",
+    "format-ethernet": "<span size='8pt' weight='800' color='#6c6c8a'>NET</span>  WIRED",
+    "format-disconnected": "<span size='8pt' weight='800'>NET</span>  OFFLINE",
     "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}",
     "tooltip-format-ethernet": "{ifname}\n{ipaddr}",
     "max-length": 22
@@ -136,10 +149,10 @@
 
   "battery": {
     "states": { "warning": 30, "critical": 15 },
-    "format": "<span color='#9b5de5'>{icon}</span>  {capacity}%",
-    "format-charging": "<span color='#81c784'>󰂄</span>  {capacity}%",
-    "format-plugged": "<span color='#81c784'></span>  {capacity}%",
-    "format-alt": "<span color='#9b5de5'>{icon}</span>  {time}",
+    "format": "<span size='8pt' weight='800' color='#6c6c8a'>BAT</span>  {capacity}%",
+    "format-charging": "<span size='8pt' weight='800' color='#9b5de5'>CHG</span>  {capacity}%",
+    "format-plugged": "<span size='8pt' weight='800' color='#9b5de5'>AC</span>  {capacity}%",
+    "format-alt": "<span size='8pt' weight='800' color='#6c6c8a'>BAT</span>  {time}",
     "format-icons": ["", "", "", "", ""],
     "tooltip-format": "{timeTo}  ·  {power:0.1f}W"
   },

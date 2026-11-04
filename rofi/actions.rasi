@@ -1,0 +1,4 @@
+/* ~/.config/rofi/actions.rasi — dunst's action picker: the power deck with its own title
+   (dunstrc can't hold the -theme-str: ';' starts a comment there) */
+@import "~/.config/rofi/power.rasi"
+textbox-brand { content: "ACTIONS"; }

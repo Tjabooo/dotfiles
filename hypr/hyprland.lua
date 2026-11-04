@@ -85,14 +85,14 @@ hl.config({
         layout           = "dwindle",
         resize_on_border = true,
         col = {
-            active_border   = { colors = { "rgba(9b5de5ee)", "rgba(f15bb5ee)" }, angle = 45 },
-            inactive_border = "rgba(2a2a4588)",
+            -- deck look (neon/eww, rofi, waybar): square frames, solid violet = focused, line = idle
+            active_border   = "rgba(9b5de5ff)",
+            inactive_border = "rgba(2a2a45ff)",
         },
     },
 
     decoration = {
-        rounding         = 12,
-        rounding_power   = 2,
+        rounding         = 0,     -- square like the eww decks
         active_opacity   = 1.0,
         inactive_opacity = 0.95,
         shadow = {

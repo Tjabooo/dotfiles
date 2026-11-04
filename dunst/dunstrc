@@ -3,15 +3,15 @@
     monitor = 0
     follow = mouse
     origin = top-right
-    offset = 14x56
+    offset = (14, 56)
     width = 380
-    height = 220
+    height = (0, 220)
     gap_size = 6
     notification_limit = 5
 
-    font = JetBrainsMono Nerd Font 11
+    font = JetBrainsMono Nerd Font 10
     markup = full
-    format = "<b>%s</b>\n<span foreground='#babbf1'>%b</span>"
+    format = "<span size='small' weight='800' foreground='#9b5de5'>%a</span>\n<b>%s</b>\n<span foreground='#babbf1'>%b</span>"
     alignment = left
     word_wrap = yes
     ignore_newline = no
@@ -19,9 +19,9 @@
     padding = 12
     horizontal_padding = 16
     text_icon_padding = 12
-    frame_width = 2
-    corner_radius = 12
-    icon_corner_radius = 8
+    frame_width = 1
+    corner_radius = 0
+    icon_corner_radius = 0
     separator_height = 2
     separator_color = frame
     min_icon_size = 32
@@ -29,9 +29,9 @@
     icon_position = left
 
     progress_bar = true
-    progress_bar_height = 8
+    progress_bar_height = 6
     progress_bar_frame_width = 0
-    progress_bar_corner_radius = 4
+    progress_bar_corner_radius = 0
     highlight = "#f15bb5"
 
     sort = yes
@@ -41,7 +41,7 @@
     history_length = 30
     # away from the keyboard for 2 min: notifications stay until you're back
     idle_threshold = 120
-    dmenu = /usr/bin/rofi -dmenu -p GO -theme ~/.config/rofi/power.rasi -theme-str 'textbox-brand { content: "ACTIONS"; }'
+    dmenu = /usr/bin/rofi -dmenu -p GO -theme ~/.config/rofi/actions.rasi
     browser = /usr/bin/xdg-open
 
     # left click opens it (e.g. jumps to the Discord message)
@@ -56,16 +56,16 @@
     timeout = 4
 
 [urgency_normal]
-    background = "#0f0f1eee"
+    background = "#0f0f1ef2"
     foreground = "#e0e0f0"
     frame_color = "#9b5de5"
     timeout = 8
 
 [urgency_critical]
-    background = "#0f0f1eee"
+    background = "#0f0f1ef2"
     foreground = "#ffffff"
-    frame_color = "#ff5252"
-    highlight = "#ff5252"
+    frame_color = "#f15bb5"
+    highlight = "#f15bb5"
     timeout = 0
 
 # volume / brightness / mic bars from neon-osd: small, quick, never in history

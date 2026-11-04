@@ -1,23 +1,24 @@
-/* ~/.config/waybar/style.css  —  "midnight neon" */
+/* ~/.config/waybar/style.css  —  "midnight neon" deck bar
+   Same look as the eww overlays (~/.config/neon/eww) and rofi (~/.config/rofi/deck.rasi):
+   square panels, 3px violet bar on top, small bold uppercase tags, solid key chips,
+   hover = panel + 3px accent edge on the left. No CSS letter-spacing (GTK clips the last letter). */
 
 @define-color base     #0f0f1e;
-@define-color surface  #1a1a2f;
-@define-color overlay  #2a2a45;
+@define-color surface  #1a1a2f;   /* eww $panel */
+@define-color overlay  #2a2a45;   /* eww $line  */
 @define-color text     #e0e0f0;
 @define-color subtext  #9d9dbf;
-@define-color muted    #6c6c8a;
+@define-color muted    #6c6c8a;   /* eww $dim   */
 @define-color violet   #9b5de5;
 @define-color pink     #f15bb5;
 @define-color lavender #babbf1;
 @define-color cyan     #00c6ff;
-@define-color green    #81c784;
-@define-color amber    #ffc371;
 @define-color red      #ff5252;
 
 * {
     font-family: "JetBrainsMono Nerd Font", "Font Awesome 6 Free", "Noto Sans", sans-serif;
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 12px;
+    font-weight: 600;
     border: none;
     border-radius: 0;
     min-height: 0;
@@ -34,13 +35,13 @@ window#waybar.hidden {
     opacity: 0.2;
 }
 
-/* ── Islands ─────────────────────────────────────────────── */
+/* ── Islands = eww .deck ─────────────────────────────────── */
 .modules-left,
 .modules-center,
 .modules-right {
-    background: alpha(@base, 0.82);
-    border: 1px solid alpha(@lavender, 0.14);
-    border-radius: 14px;
+    background: alpha(@base, 0.95);
+    border: 1px solid @overlay;
+    border-top: 3px solid @violet;
     padding: 0 4px;
 }
 
@@ -49,165 +50,160 @@ window#waybar.hidden {
 #custom-awake, #cpu, #memory, #backlight, #pulseaudio, #language,
 #network, #battery, #custom-power {
     padding: 0 10px;
-    margin: 5px 2px;
-    border-radius: 10px;
+    margin: 0;
     color: @text;
     background: transparent;
-    transition: background 200ms ease, color 200ms ease;
+    transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
 }
 
+/* columns like the deck groups: a 1px rule between neighbours */
+.modules-right > widget:not(:first-child) > *,
+#stats > * {
+    border-left: 1px solid alpha(@overlay, 0.9);
+}
+#stats > *:first-child { border-left: none; }
+
+/* hover = rofi's selected row: panel + accent edge */
 #mpris:hover, #clock:hover, #custom-updates:hover, #custom-house:hover, #custom-awake:hover,
 #cpu:hover, #memory:hover, #backlight:hover, #pulseaudio:hover,
 #language:hover, #network:hover, #battery:hover {
-    background: alpha(@violet, 0.16);
+    background: @surface;
+    box-shadow: inset 3px 0 @violet;
 }
 
-/* ── Launcher: the gradient "logo" pill ──────────────────── */
+/* ── Launcher: solid violet key chip ─────────────────────── */
 #custom-launcher {
-    font-size: 16px;
-    color: #ffffff;
-    padding: 0 13px 0 10px;
-    margin-left: 4px;
-    background: linear-gradient(135deg, @violet, @pink);
+    font-size: 14px;
+    color: @base;
+    background: @violet;
+    padding: 0 9px 0 7px;
+    margin: 5px 6px 5px 2px;
 }
+#custom-launcher:hover { background: @pink; }
 
-#custom-launcher:hover {
-    background: linear-gradient(135deg, shade(@violet, 1.15), shade(@pink, 1.15));
-}
-
-/* ── Workspaces ──────────────────────────────────────────── */
-#workspaces {
-    padding: 0 2px;
-}
+/* ── Workspaces = deck key chips ─────────────────────────── */
+#workspaces { padding: 0 2px; }
 
 #workspaces button {
-    padding: 0 8px;
-    margin: 0 1px;
-    min-width: 0;
-    border-radius: 8px;
-    color: @subtext;
-    background: transparent;
-    transition: all 200ms ease;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 0 6px;
+    margin: 6px 2px;
+    min-width: 12px;
+    color: @text;
+    background: @overlay;            /* occupied: line-coloured chip */
+    transition: background 150ms ease, color 150ms ease;
 }
-
 #workspaces button.empty {
     color: @muted;
+    background: transparent;
 }
-
 #workspaces button:hover {
-    background: alpha(@violet, 0.18);
-    color: @text;
+    color: @violet;
+    background: @surface;
 }
-
 #workspaces button.active {
-    padding: 0 14px;
-    color: #ffffff;
-    font-weight: bold;
-    background: linear-gradient(135deg, @violet, @pink);
+    color: @base;
+    background: @violet;             /* the deck .key chip */
 }
-
 #workspaces button.special {
-    color: @cyan;
+    color: @pink;
+    background: transparent;
 }
-
+#workspaces button.special.active,
+#workspaces button.special.visible {
+    color: @base;
+    background: @pink;
+}
 #workspaces button.urgent {
-    color: #ffffff;
-    background: alpha(@red, 0.7);
+    color: @base;
+    background: @red;
 }
 
-/* ── Center ──────────────────────────────────────────────── */
+/* ── Centre: clock ───────────────────────────────────────── */
 #clock {
-    font-weight: bold;
+    font-size: 13px;
     padding: 0 14px;
 }
 
-#mpris.paused {
-    color: @muted;
-}
+#mpris { color: @text; }
+#mpris.paused { color: @muted; }
 
 /* ── States ──────────────────────────────────────────────── */
-#custom-updates {
-    color: @pink;
-}
-
-#custom-awake {
-    color: @subtext;
-}
-
+#custom-awake { color: @muted; }
 #custom-awake.activated {
-    color: #ffffff;
-    background: linear-gradient(135deg, @violet, @pink);
+    color: @base;
+    background: @violet;
 }
 
-#pulseaudio.muted {
-    color: @red;
-    background: alpha(@red, 0.12);
-}
-
+#pulseaudio.muted,
 #network.disconnected {
-    color: @red;
-}
-
-#battery.charging,
-#battery.plugged {
-    color: @green;
+    color: @pink;
+    box-shadow: inset 0 -2px @pink;
 }
 
 #battery.warning:not(.charging) {
-    color: @amber;
+    color: @pink;
 }
-
 #battery.critical:not(.charging) {
-    color: #ffffff;
-    background: linear-gradient(135deg, @red, #ff1744);
+    color: @base;
+    background: @pink;
     animation: blink 0.8s infinite alternate;
 }
-
 @keyframes blink {
     from { opacity: 1; }
-    to   { opacity: 0.5; }
+    to   { opacity: 0.55; }
 }
 
+/* home server health (marquee-house): calm when fine, pink when something needs a look */
+#custom-house.ok     { color: @lavender; }
+#custom-house.issues { color: @pink; }
+#custom-house.down   { color: @muted; }
+
+/* ── Power: pink glyph, solid chip on hover ──────────────── */
 #custom-power {
-    color: #ff5f6d;
-    margin-right: 4px;
-    padding: 0 12px;
+    color: @pink;
+    padding: 0 9px;
+    margin: 5px 2px 5px 6px;
+    border-left: none;
 }
-
 #custom-power:hover {
-    background: alpha(#ff5f6d, 0.2);
+    color: @base;
+    background: @pink;
 }
 
-/* ── Tooltips & tray menus ───────────────────────────────── */
+/* ── Tooltips & tray menus = small decks ─────────────────── */
 tooltip {
-    background: @surface;
-    border: 1px solid alpha(@violet, 0.45);
-    border-radius: 10px;
+    background: @base;
+    border: 1px solid @overlay;
+    border-top: 3px solid @violet;
 }
-
 tooltip label {
     color: @text;
-    padding: 4px 6px;
+    padding: 6px 8px;
 }
 
 menu {
-    background: @surface;
-    border: 1px solid alpha(@violet, 0.35);
-    border-radius: 8px;
+    background: @base;
+    border: 1px solid @overlay;
+    border-top: 3px solid @violet;
     color: @text;
     padding: 4px;
 }
-
 menuitem {
-    border-radius: 6px;
     padding: 4px 8px;
 }
-
 menuitem:hover {
-    background: alpha(@violet, 0.25);
+    background: @surface;
+    box-shadow: inset 3px 0 @violet;
 }
 
-/* home server health (marquee-house): calm when fine, pink with a count when something needs a look */
-#custom-house.ok     { color: #babbf1; }
-#custom-house.issues { color: #f15bb5; }
-#custom-house.down   { color: #6c6c8a; }
+/* date tag beside the clock: small, bold, dim (eww .deck-gname) */
+#custom-date {
+    font-size: 10px;
+    font-weight: 800;
+    color: @muted;
+    padding: 0 14px 0 10px;
+    border-left: 1px solid @overlay;
+    margin: 7px 0;
+}
