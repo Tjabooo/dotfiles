@@ -53,10 +53,10 @@ or unavailable, the column shows the current Windows clipboard and says why.
 Selecting an older Windows item leaves Windows’ current clipboard unchanged.
 
 `homedir/.local/bin/clipdeck` launches the separately installed Archfleet helper
-at `~/.local/share/archfleet/clipdeck.py`. Its source of truth and Windows desktop
-bridge live in `C:\Users\mediaserver\home-network` on home-server. Keep both Arch
-installations updated from there; the helper uses existing SSH aliases and the
-same-user Windows named pipe, without another network listener or cloud sync.
+at `~/.local/share/archfleet/clipdeck.py`. Archfleet (with clipdeck and its Windows desktop
+bridge) is its own repo, [Tjabooo/archfleet](https://github.com/Tjabooo/archfleet): update both
+Arch machines with `git pull && ./install.sh` from a clone. The helper uses existing SSH aliases
+and the same-user Windows named pipe, without another network listener or cloud sync.
 The overlay stores only its visible previews temporarily in the private runtime
 directory while open. Clipboard contents and credentials stay out of this repo.
 
