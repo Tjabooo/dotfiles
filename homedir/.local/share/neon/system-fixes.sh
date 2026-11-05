@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# system-fixes.sh — root-level fixes found by the 2026-11-02 scan of magi (Zenbook S 16).
+# system-fixes.sh — root-level fixes found by the 2026-11-02 scan of this laptop (Zenbook S 16).
 # Run as YOUR user (not with sudo): it calls sudo itself and asks before every step,
 # so you can skip any of them. Safe to re-run: finished steps detect that and skip.
 set -uo pipefail

@@ -115,7 +115,7 @@ copy the launcher to `~/.local/bin/`, and sign in once through the app.
 Verify with `ssh arch-laptop 'PATH="$HOME/.local/bin:$PATH"; codex --version'`.
 
 The home network's Windows host uses the separate `home-server-codex` SSH alias;
-its compatibility bridge is maintained in `home-network/codex-remote` on home-server.
+its compatibility bridge is [Tjabooo/codex-ssh-windows](https://github.com/Tjabooo/codex-ssh-windows).
 SSH keys and account credentials stay outside this repository.
 
 ## Boot: GRUB + Secure Boot (sbctl, no shim)
@@ -202,3 +202,9 @@ sudo pacman -S --needed hyprland hyprlock hypridle hyprpaper hyprshot hyprpolkit
   playerctl pacman-contrib zoxide pkgfile alacritty kitty yazi mpv ttf-jetbrains-mono-nerd jq
 yay -S eww   # keybind overlay (AUR)
 ```
+
+Machine-specific bits to fill in after copying:
+
+- Lock-screen weather (`hypr/scripts/get_weather.sh`) needs a free [Meteosource](https://www.meteosource.com/)
+  API key in `~/.config/hypr/meteosource.key` (or `METEOSOURCE_API_KEY`); without one it shows nothing.
+- `neon/vpn.toml`: set `[dns] home` to your home network's DNS resolver, or empty it to keep Mullvad DNS.
