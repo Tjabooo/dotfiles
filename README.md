@@ -7,7 +7,7 @@ The desktop lives in `Tjabooo/dotfiles-desktop` ("ember"); this one is for media
 
 | repo path | goes to |
 |---|---|
-| `alacritty/ dunst/ fastfetch/ hypr/ mpv/ neon/ nvim/ ohmyposh/ pacman/ satty/ systemd/ rofi/ waybar/ zed/` | `~/.config/<same>` |
+| `alacritty/ dunst/ fastfetch/ hypr/ mpv/ neon/ npukit/ nvim/ ohmyposh/ pacman/ satty/ systemd/ rofi/ waybar/ zed/` | `~/.config/<same>` |
 | `vesktop/themes/` | `~/.config/vesktop/themes/` (Vesktop) and `~/.config/Vencord/themes/` (Discord + Vencord) |
 | `mimeapps.list` | `~/.config/mimeapps.list` |
 | `homedir/.zshrc .bashrc .bash_profile` | `~/` |
@@ -56,6 +56,21 @@ units, so they restart when they crash and log to `journalctl --user -u <name>`.
   into Windows (GRUB or systemd-boot, whichever booted).
 - **House dot** (waybar `custom/house`): home server health from Marquee's House tab via
   `marquee-house` (lives in the marquee repo, `agents/`); hidden away from home or when not installed.
+
+## NPU tools (npukit)
+
+The Ryzen AI NPU does real work through [npukit](https://github.com/Tjabooo/npukit) (FastFlowLM underneath):
+install it from its repo (`./install.sh`); `npukit/config.toml` here is this laptop's config (aliases, search roots,
+VS Code as the opener).
+
+- `SUPER+ALT+D` dictate (press, talk, press again → typed + copied), `SUPER+SHIFT+Print` region → text,
+  `SUPER+ALT+S` semantic search over `~/workspace`, `~/Documents` and the agent-mesh memory, `SUPER+ALT+N` NPU menu.
+- Waybar `custom/npu`: dim `NPU` = nothing loaded, model name = loaded, pink edge = working, red chip = recording.
+  Signal-driven (RTMIN+16 from the gateway), no polling. Click: menu, right-click: unload.
+- Typing dictated text needs `wtype` (`pacman -S wtype`); without it the text only lands on the clipboard.
+- FastFlowLM is pinned to the upstream 1.0.12 tarball in `~/.local/share/fastflowlm/1.0.12/` (`[server] flm` in
+  `npukit/config.toml`): Arch's 1.0.11 returns wrong embedding vectors and stalls the NPU. Drop the pin once
+  `pacman -Q fastflowlm` shows 1.0.12+.
 
 ## Clipboard history across the home network
 

@@ -1,0 +1,18 @@
+# npukit on unit-01 (defaults: ~/workspace/npukit/config.example.toml)
+
+[server]
+# FLM 1.0.12 portable build (embed-gemma fixes) until Arch packages it; then drop this line
+flm = "~/.local/share/fastflowlm/1.0.12/flm"
+
+[models.aliases]
+fast = "qwen3.5:4b"
+quality = "gpt-oss:20b"
+vision = "qwen3.5:4b"      # shares the chat model: no swap between OCR and chat
+
+[search]
+# notes = the agent-mesh memory + Documents; code = ~/workspace
+roots = ["~/workspace", "~/Documents", "~/.agent-mesh/memory"]
+exclude_globs = ["*.min.*", "*.map", "*-lock.json", "*.lock", "*/third_party/*", "*/external/*",
+                 "*/site-packages/*", "*/wp-includes/*", "*/wp-admin/*", "*/wp-content/*",
+                 "*/engine/include/*"]
+open = ["code", "-g", "{path}:{line}"]

@@ -12,7 +12,7 @@
 
   "modules-left":   ["custom/launcher", "hyprland/workspaces", "mpris"],
   "modules-center": ["clock", "custom/date"],
-  "modules-right":  ["custom/updates", "custom/house", "custom/vpn", "tray", "custom/awake", "group/stats",
+  "modules-right":  ["custom/updates", "custom/house", "custom/vpn", "tray", "custom/awake", "custom/npu", "group/stats",
                      "backlight", "pulseaudio", "hyprland/language", "network",
                      "battery", "custom/power"],
 
@@ -112,6 +112,17 @@
     "on-click": "~/.local/bin/screen-awake toggle",
     "exec-on-event": true,
     "tooltip": true
+  },
+
+  // NPU (npukit): npud renders bar.json and sends RTMIN+16 on every change (no interval, no polling).
+  // dim tag = nothing loaded, model name = loaded, pink edge = working, red chip = dictation recording
+  "custom/npu": {
+    "exec": "cat ~/.local/state/npukit/bar.json 2>/dev/null || echo '{\"text\":\"NPU\",\"class\":\"off\"}'",
+    "return-type": "json",
+    "signal": 16,
+    "tooltip": true,
+    "on-click": "~/.local/bin/npu menu --theme ~/.config/rofi/deck.rasi",
+    "on-click-right": "~/.local/bin/npu stop"
   },
 
   "group/stats": {

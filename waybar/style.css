@@ -47,7 +47,7 @@ window#waybar.hidden {
 
 /* ── Shared module look ──────────────────────────────────── */
 #custom-launcher, #workspaces, #mpris, #clock, #custom-updates, #custom-house, #custom-vpn, #tray,
-#custom-awake, #cpu, #memory, #backlight, #pulseaudio, #language,
+#custom-awake, #custom-npu, #cpu, #memory, #backlight, #pulseaudio, #language,
 #network, #battery, #custom-power {
     padding: 0 10px;
     margin: 0;
@@ -64,7 +64,7 @@ window#waybar.hidden {
 #stats > *:first-child { border-left: none; }
 
 /* hover = rofi's selected row: panel + accent edge */
-#mpris:hover, #clock:hover, #custom-updates:hover, #custom-house:hover, #custom-vpn:hover, #custom-awake:hover,
+#mpris:hover, #clock:hover, #custom-updates:hover, #custom-house:hover, #custom-vpn:hover, #custom-awake:hover, #custom-npu:hover,
 #cpu:hover, #memory:hover, #backlight:hover, #pulseaudio:hover,
 #language:hover, #network:hover, #battery:hover {
     background: @surface;
@@ -172,6 +172,12 @@ window#waybar.hidden {
 #custom-vpn.blocked,
 #custom-vpn.error,
 #custom-vpn.leak       { color: @red; box-shadow: inset 0 -2px @red; }
+
+/* NPU (npukit): text colours come from the module itself; states add the deck marks */
+#custom-npu.loading { box-shadow: inset 0 -2px @cyan; }
+#custom-npu.busy    { box-shadow: inset 0 -2px @pink; }
+#custom-npu.error   { box-shadow: inset 0 -2px @red; }
+#custom-npu.rec     { color: @base; background: @red; }
 
 /* ── Power: pink glyph, solid chip on hover ──────────────── */
 #custom-power {
