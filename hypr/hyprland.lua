@@ -278,6 +278,7 @@ hl.bind("SUPER + SHIFT + A", hl.dsp.exec_cmd(terminal .. " --class archfleet --t
 
 -- Scratchpads
 hl.bind("SUPER + D",         hl.dsp.workspace.toggle_special("discord"))  -- Discord scratchpad
+hl.bind("SUPER + ALT + V",   hl.dsp.exec_cmd(bin .. "neon-vpn menu"))  -- VPN deck (on/off, relay, lockdown)
 hl.bind("SUPER + M",         hl.dsp.workspace.toggle_special("music"))  -- Spotify scratchpad
 hl.bind("SUPER + grave",     hl.dsp.workspace.toggle_special("term"))  -- drop-down terminal
 hl.bind("SUPER + SHIFT + E", hl.dsp.workspace.toggle_special("files"))  -- yazi scratchpad

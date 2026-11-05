@@ -1,0 +1,10 @@
+[Unit]
+Description=neon-vpn: Mullvad watcher (waybar state, drop + leak alerts, home/away DNS)
+PartOf=graphical-session.target
+After=graphical-session.target dunst.service
+
+[Service]
+ExecStart=%h/.local/bin/neon-vpn daemon
+Restart=on-failure
+RestartSec=3
+Nice=5

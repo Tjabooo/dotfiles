@@ -46,7 +46,7 @@ window#waybar.hidden {
 }
 
 /* ── Shared module look ──────────────────────────────────── */
-#custom-launcher, #workspaces, #mpris, #clock, #custom-updates, #custom-house, #tray,
+#custom-launcher, #workspaces, #mpris, #clock, #custom-updates, #custom-house, #custom-vpn, #tray,
 #custom-awake, #cpu, #memory, #backlight, #pulseaudio, #language,
 #network, #battery, #custom-power {
     padding: 0 10px;
@@ -64,7 +64,7 @@ window#waybar.hidden {
 #stats > *:first-child { border-left: none; }
 
 /* hover = rofi's selected row: panel + accent edge */
-#mpris:hover, #clock:hover, #custom-updates:hover, #custom-house:hover, #custom-awake:hover,
+#mpris:hover, #clock:hover, #custom-updates:hover, #custom-house:hover, #custom-vpn:hover, #custom-awake:hover,
 #cpu:hover, #memory:hover, #backlight:hover, #pulseaudio:hover,
 #language:hover, #network:hover, #battery:hover {
     background: @surface;
@@ -159,6 +159,15 @@ window#waybar.hidden {
 #custom-house.ok     { color: @lavender; }
 #custom-house.issues { color: @pink; }
 #custom-house.down   { color: @muted; }
+
+/* Mullvad (neon-vpn): lavender when on, cyan while connecting, red when blocked or leaking */
+#custom-vpn.connected  { color: @lavender; }
+#custom-vpn.connecting { color: @cyan; }
+#custom-vpn.off,
+#custom-vpn.down       { color: @muted; }
+#custom-vpn.blocked,
+#custom-vpn.error,
+#custom-vpn.leak       { color: @red; box-shadow: inset 0 -2px @red; }
 
 /* ── Power: pink glyph, solid chip on hover ──────────────── */
 #custom-power {

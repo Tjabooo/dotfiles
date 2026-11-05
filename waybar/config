@@ -12,7 +12,7 @@
 
   "modules-left":   ["custom/launcher", "hyprland/workspaces", "mpris"],
   "modules-center": ["clock", "custom/date"],
-  "modules-right":  ["custom/updates", "custom/house", "tray", "custom/awake", "group/stats",
+  "modules-right":  ["custom/updates", "custom/house", "custom/vpn", "tray", "custom/awake", "group/stats",
                      "backlight", "pulseaudio", "hyprland/language", "network",
                      "battery", "custom/power"],
 
@@ -89,6 +89,18 @@
     "interval": 300,
     "signal": 9,
     "tooltip": true
+  },
+
+  // Mullvad: shield + relay city. neon-vpn.service renders vpn-bar.json and sends RTMIN+15 on every
+  // change, so this only reads a file when something happened (no interval, no polling)
+  "custom/vpn": {
+    "exec": "cat ~/.local/state/neon/vpn-bar.json 2>/dev/null",
+    "return-type": "json",
+    "signal": 15,
+    "tooltip": true,
+    "on-click": "~/.local/bin/neon-vpn toggle",
+    "on-click-right": "~/.local/bin/neon-vpn relay",
+    "on-click-middle": "~/.local/bin/neon-vpn menu"
   },
 
   "tray": { "icon-size": 15, "spacing": 10 },

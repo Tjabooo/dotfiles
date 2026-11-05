@@ -1,0 +1,739 @@
+#!/usr/bin/env python3
+"""ember-vpn: the Mullvad VPN, wired into the rice (waybar, deck, MAGI panel, dunst, launchers).
+
+  ember-vpn daemon                 watcher (systemd user unit, part of the session target): follows
+                                   `mullvad status --json listen`, writes state for waybar/MAGI/marquee-house,
+                                   notifies on connect / drop / relay change, logs drops and leaks,
+                                   and switches DNS between the home resolver and Mullvad's
+  ember-vpn status | json          waybar JSON / full state
+  ember-vpn toggle | connect | disconnect
+  ember-vpn menu                   rofi VPN deck: on/off, relay, reconnect, lockdown (machines without a command deck)
+  ember-vpn relay                  rofi relay picker (Mullvad-owned WireGuard relays by default)
+  ember-vpn relay set LOC...       e.g. `relay set se sto`, `relay set se-sto-wg-001`, `relay set default`
+  ember-vpn lockdown on|off|toggle
+  ember-vpn competitive on|off     called by `ember mode`: put the VPN in its gaming state and back
+  ember-vpn exclude CMD [ARGS...]  run CMD outside the tunnel (plain exec when Mullvad isn't there)
+  ember-vpn exclude-running        move already-running apps from [split] apps outside the tunnel
+  ember-vpn setup                  apply the settings in vpn.toml to the Mullvad daemon (idempotent)
+  ember-vpn events [HOURS]         drops / leaks / errors from the last HOURS (default 24)
+
+The same file runs on every machine: its name picks the rice (ember-vpn -> ~/.config/ember/vpn.toml,
+~/.local/state/ember/; neon-vpn -> neon). Everything machine-specific lives in vpn.toml.
+"""
+import json
+import os
+import re
+import shutil
+import signal
+import subprocess
+import sys
+import threading
+import time
+import tomllib
+from pathlib import Path
+
+HOME = Path.home()
+RICE = os.environ.get("VPN_RICE") or (Path(sys.argv[0]).name.split("-")[0] or "ember")
+CONF = Path(os.environ.get("XDG_CONFIG_HOME", HOME / ".config")) / RICE / "vpn.toml"
+STATE = Path(os.environ.get("XDG_STATE_HOME", HOME / ".local/state")) / RICE
+HOUSE_STATE = Path(os.environ.get("XDG_STATE_HOME", HOME / ".local/state")) / "marquee-house"
+SF = STATE / "vpn.json"            # full state (MAGI panel, emberd, Archfleet)
+BAR = STATE / "vpn-bar.json"       # pre-rendered waybar JSON: the module just reads it on a signal
+EVENTS = STATE / "vpn-events.jsonl"
+INTENT = STATE / "vpn-intent"      # "<what> <epoch>": a change we asked for, so it isn't reported as a drop
+COMP = STATE / "vpn-competitive"   # competitive mode is holding the VPN off; restore on `competitive off`
+PIDFILE = STATE / "vpn-daemon.pid"
+EXCL_CGROUP = Path("/sys/fs/cgroup/net_cls/mullvad-exclusions/cgroup.procs")
+RELAY_CACHES = [Path("/var/cache/mullvad-vpn/relays.json"), Path("/opt/Mullvad VPN/resources/relays.json")]
+
+ICON = {"connected": "\U000f0565", "connecting": "\U000f0499", "off": "\U000f099e", "blocked": "\U000f099d"}
+
+DEFAULTS = {
+    "waybar_signal": 15,
+    "relay": {"location": ["se", "sto"], "ownership": "owned"},
+    "settings": {"auto_connect": True, "lockdown": False, "lan": True, "quantum_resistant": True,
+                 "daita": True, "daita_direct_only": True},
+    "dns": {"home": [], "home_gateway_mac": "", "away_block": ["ads", "trackers", "malware"]},
+    "split": {"apps": []},
+    "competitive": {"action": "disconnect"},   # disconnect | daita-off | none
+    "drop_grace": 8,                           # seconds without the tunnel before a reconnect counts as a drop
+}
+
+
+# ── helpers ──────────────────────────────────────────────────────────────────
+def cfg():
+    c = json.loads(json.dumps(DEFAULTS))
+    try:
+        user = tomllib.loads(CONF.read_text())
+    except (OSError, tomllib.TOMLDecodeError):
+        user = {}
+    for k, v in user.items():
+        if isinstance(v, dict) and isinstance(c.get(k), dict):
+            c[k].update(v)
+        else:
+            c[k] = v
+    if not c["dns"].get("home_gateway_mac"):   # same "is this home?" test marquee-house uses
+        try:
+            m = re.search(r'^HOME_GW_MAC="?([0-9a-fA-F:]{17})', (HOME / ".config/marquee-house.env").read_text(), re.M)
+            c["dns"]["home_gateway_mac"] = m.group(1).lower() if m else ""
+        except OSError:
+            pass
+    return c
+
+
+def run(*cmd, timeout=8):
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        return r.returncode, r.stdout.strip(), r.stderr.strip()
+    except (FileNotFoundError, subprocess.TimeoutExpired) as e:
+        return 127, "", str(e)
+
+
+def mv(*args, timeout=10):
+    return run("mullvad", *args, timeout=timeout)
+
+
+def read(p, d=""):
+    try:
+        return Path(p).read_text().strip()
+    except OSError:
+        return d
+
+
+def write(p, text):
+    p = Path(p)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    tmp = p.with_name(f".{p.name}.tmp")
+    tmp.write_text(text)
+    tmp.replace(p)
+
+
+def load_state():
+    try:
+        return json.loads(read(SF, "{}"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def intend(what):
+    write(INTENT, f"{what} {time.time():.0f}\n")
+
+
+# which planned actions explain which kind of transition (a recent "connect" must not hide a disconnect)
+GOING_DOWN = ("disconnect", "competitive")
+RECONNECTING = ("connect", "relay", "reconnect")
+
+
+def intended(kinds, window=20):
+    parts = read(INTENT).split()
+    try:
+        what = parts[0] if parts and time.time() - float(parts[1]) < window else None
+    except (IndexError, ValueError):
+        return None
+    return what if what in kinds else None
+
+
+def poke_daemon():
+    """Ask the watcher to re-read settings (lockdown, DNS) after a change made here."""
+    try:
+        pid = int(read(PIDFILE, "0"))
+    except ValueError:
+        return
+    # never 0 / 1 (0 = our whole process group) and only if that pid really is the watcher
+    if pid <= 1 or "daemon" not in read(f"/proc/{pid}/cmdline").replace("\0", " ") \
+            or "vpn" not in read(f"/proc/{pid}/cmdline"):
+        return
+    try:
+        os.kill(pid, signal.SIGUSR1)
+    except (ProcessLookupError, PermissionError):
+        pass
+
+
+def notify(title, body="", urgency="normal"):
+    run("notify-send", "-a", "VPN", "-u", urgency, "-h", "string:x-dunst-stack-tag:vpn", title, body, timeout=3)
+
+
+def log_event(kind, detail=""):
+    STATE.mkdir(parents=True, exist_ok=True)
+    with open(EVENTS, "a") as f:
+        f.write(json.dumps({"t": round(time.time()), "kind": kind, "detail": detail}) + "\n")
+    try:
+        lines = EVENTS.read_text().splitlines()
+        if len(lines) > 600:
+            write(EVENTS, "\n".join(lines[-400:]) + "\n")
+    except OSError:
+        pass
+
+
+def events(hours=24):
+    cut = time.time() - hours * 3600
+    out = []
+    for line in read(EVENTS).splitlines():
+        try:
+            e = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if e.get("t", 0) >= cut:
+            out.append(e)
+    return out
+
+
+# ── reading the Mullvad daemon ───────────────────────────────────────────────
+def parse_status(st):
+    """`mullvad status --json` -> the flat dict everything else uses."""
+    state = st.get("state", "unknown")
+    d = st.get("details") or {}
+    if not isinstance(d, dict):
+        d = {}
+    loc = d.get("location") or {}
+    out = {"state": state, "relay": None, "city": None, "country": None, "exit_ip": None,
+           "mullvad_exit": None, "error": None, "blocked": False}
+    if state in ("connected", "connecting"):
+        ep = d.get("endpoint") or {}
+        out["relay"] = loc.get("hostname") or (ep.get("hostname") if isinstance(ep, dict) else None)
+        out["city"], out["country"] = loc.get("city"), loc.get("country")
+        out["exit_ip"] = loc.get("ipv4") or loc.get("ipv6")
+        out["mullvad_exit"] = loc.get("mullvad_exit_ip")
+    if state == "disconnected":
+        out["blocked"] = bool(d.get("locked_down"))
+    if state == "error":
+        cause = d.get("cause", d)
+        out["error"] = cause if isinstance(cause, str) else json.dumps(cause)[:160]
+        out["blocked"] = not d.get("block_failure")
+    if state == "connecting":
+        out["blocked"] = True   # Mullvad blocks everything while it connects
+    return out
+
+
+def live_status():
+    rc, out, _ = mv("status", "--json", timeout=5)
+    if rc != 0 or not out:
+        return None
+    try:
+        return parse_status(json.loads(out.splitlines()[-1]))
+    except json.JSONDecodeError:
+        return None
+
+
+def lockdown_on():
+    rc, out, _ = mv("lockdown-mode", "get", timeout=5)
+    return rc == 0 and bool(re.search(r":\s*on\b", out, re.I))
+
+
+def bar_json(s):
+    st = s.get("state")
+    where = s.get("city") or (s.get("relay") or "").split("-wg-")[0].upper() or "Mullvad"
+    if st == "daemon-down":
+        return {"text": ICON["off"], "class": "down", "tooltip": "Mullvad daemon isn't running\nsudo systemctl start mullvad-daemon"}
+    if st == "connected":
+        leak = s.get("mullvad_exit") is False
+        tip = [f"VPN on · {where}", f"relay {s.get('relay') or '?'}", f"exit {s.get('exit_ip') or 'checking…'}"]
+        if leak:
+            tip.append("exit is NOT a Mullvad address")
+        tip.append(f"DNS {s.get('dns_mode') or '?'} · lockdown {'on' if s.get('lockdown') else 'off'}")
+        tip.append("click: disconnect · right-click: relay")
+        return {"text": f"{ICON['connected']} {where}", "class": "leak" if leak else "connected", "tooltip": "\n".join(tip)}
+    if st in ("connecting", "disconnecting"):
+        return {"text": f"{ICON['connecting']} {where}", "class": "connecting",
+                "tooltip": f"VPN {st}… (traffic is held until it's up)"}
+    if st == "error":
+        return {"text": f"{ICON['blocked']} BLOCKED", "class": "error",
+                "tooltip": f"VPN error, traffic blocked:\n{s.get('error') or '?'}\nclick: reconnect"}
+    if s.get("blocked"):
+        return {"text": f"{ICON['blocked']} LOCKED", "class": "blocked",
+                "tooltip": "VPN off · lockdown is blocking the internet\nclick: connect"}
+    comp = " (competitive mode)" if COMP.exists() else ""
+    return {"text": ICON["off"], "class": "off", "tooltip": f"VPN off{comp}\nclick: connect · right-click: relay"}
+
+
+# ── the watcher ──────────────────────────────────────────────────────────────
+class Watcher:
+    def __init__(self):
+        self.c = cfg()
+        self.lock = threading.Lock()
+        prev = load_state()
+        self.s = {"state": "unknown", "last_drop": prev.get("last_drop"), "dns_mode": prev.get("dns_mode")}
+        self.down_since = None      # left "connected" without asking, at this time
+        self.dropped = False        # that absence was reported as a drop
+        self.notified_relay = None
+        self.connect_timer = None
+        self.stable = "unknown"     # last state other than "disconnecting"
+
+    # state out: files + waybar signal
+    def publish(self):
+        self.s["time"] = time.time()
+        self.s["competitive"] = COMP.exists()
+        write(SF, json.dumps(self.s))
+        write(BAR, json.dumps(bar_json(self.s), ensure_ascii=False) + "\n")
+        run("pkill", f"-RTMIN+{int(self.c.get('waybar_signal', 15))}", "-x", "waybar", timeout=2)
+
+    def refresh_settings(self):
+        self.s["lockdown"] = lockdown_on()
+
+    def on_status(self, new):
+        with self.lock:
+            # Mullvad always passes through "disconnecting" (on the way to disconnected OR to a reconnect):
+            # judge each change against the last state before it
+            if new["state"] == "disconnecting":
+                self.s.update(new)
+                self.publish()
+                return
+            old = self.s.get("state")
+            if old == "disconnecting":
+                old = self.stable
+            self.stable = new["state"]
+            was_connected = old == "connected"
+            self.s.update(new)
+            self.refresh_settings()
+            st = new["state"]
+            want = intended(RECONNECTING if st in ("connecting", "connected") else GOING_DOWN)
+            now = time.time()
+            if old in ("unknown", "daemon-down"):   # (re)start: take the state as it is, no notifications
+                self.notified_relay = self.s.get("relay") if st == "connected" else None
+                self.down_since, self.dropped = None, False
+            elif st == "connected":
+                if self.down_since and self.dropped:
+                    notify("VPN back", f"{self.where()} · down {now - self.down_since:.0f} s", "normal")
+                    log_event("restored", f"{self.s.get('relay')} after {now - self.down_since:.0f}s")
+                    self.notified_relay = self.s.get("relay")
+                self.down_since, self.dropped = None, False
+                if new.get("mullvad_exit") is False:
+                    if self.s.get("leak_ip") != new.get("exit_ip"):
+                        self.s["leak_ip"] = new.get("exit_ip")
+                        notify("VPN LEAK", f"Connected, but the exit {new.get('exit_ip')} isn't Mullvad's", "critical")
+                        log_event("leak", f"exit {new.get('exit_ip')} not Mullvad ({self.s.get('relay')})")
+                else:
+                    self.s.pop("leak_ip", None)
+                if not was_connected or self.notified_relay != self.s.get("relay"):
+                    self.schedule_connect_note(first=not was_connected and self.notified_relay is None)
+            elif st == "error" and old != "error":
+                self.drop(f"error: {new.get('error')}", now)
+            elif st == "disconnected" and old != "disconnected":
+                if want:
+                    notify("VPN off", "Competitive mode" if want == "competitive" else
+                           ("Lockdown is blocking the internet" if new.get("blocked") else "Traffic goes direct"), "low")
+                else:
+                    notify("VPN off", "Disconnected outside the rice (app or CLI)" +
+                           (" · lockdown blocks the internet" if new.get("blocked") else " · traffic goes direct"), "normal")
+                    log_event("off", "disconnected (not from ember-vpn)")
+                self.notified_relay = None
+                self.down_since, self.dropped = None, False
+            elif st == "connecting" and was_connected and want is None:
+                # unplanned reconnect (network change, dead relay): a drop if it lasts past drop_grace
+                self.down_since = now
+                threading.Timer(float(self.c.get("drop_grace", 8)), self.check_drop, args=(now,)).start()
+            self.publish()
+
+    def where(self):
+        return " · ".join(x for x in (self.s.get("city"), self.s.get("relay")) if x) or "Mullvad"
+
+    def schedule_connect_note(self, first):
+        if self.connect_timer:
+            self.connect_timer.cancel()
+        # the exit location arrives a moment after "connected": wait for it before saying where we are
+        delay = 0 if self.s.get("city") and self.s.get("exit_ip") else 3
+        self.connect_timer = threading.Timer(delay, self.connect_note, args=(first,))
+        self.connect_timer.start()
+
+    def connect_note(self, first):
+        with self.lock:
+            if self.s.get("state") != "connected" or self.notified_relay == self.s.get("relay"):
+                return
+            body = f"{self.where()} · {self.s.get('exit_ip') or 'exit checking…'}"
+            if self.notified_relay is None:
+                notify("VPN on", body, "low" if not first else "normal")
+            else:
+                notify("Relay changed", body, "low")
+                log_event("relay", f"{self.notified_relay} -> {self.s.get('relay')}")
+            self.notified_relay = self.s.get("relay")
+
+    def check_drop(self, since):
+        with self.lock:
+            if self.down_since == since and self.s.get("state") != "connected" and not self.dropped:
+                self.drop(f"{self.s.get('state')} for {self.c.get('drop_grace', 8)}+ s", since)
+                self.publish()
+
+    def drop(self, why, since):
+        self.dropped = True
+        self.down_since = self.down_since or since
+        self.s["last_drop"] = round(since)
+        write(HOUSE_STATE / "vpn-last-drop", f"{round(since)}\n")
+        guard = "traffic blocked (lockdown)" if self.s.get("lockdown") or self.s.get("blocked") else "traffic may go DIRECT"
+        notify("VPN dropped", f"{why}\n{guard}", "critical")
+        log_event("drop", why)
+
+    def daemon_down(self):
+        with self.lock:
+            if self.s.get("state") not in ("daemon-down", "unknown"):
+                notify("Mullvad daemon stopped", "VPN state unknown", "critical")
+                log_event("daemon", "mullvad-daemon stopped answering")
+            self.s.update({"state": "daemon-down", "relay": None, "city": None, "exit_ip": None, "blocked": False})
+            self.publish()
+
+    # threads
+    def listen(self):
+        backoff = 2
+        while True:
+            if not shutil.which("mullvad"):
+                self.daemon_down(); time.sleep(300); continue
+            cur = live_status()
+            if cur is None:
+                self.daemon_down(); time.sleep(backoff); backoff = min(backoff * 2, 60); continue
+            backoff = 2
+            self.on_status(cur)
+            exclude_running(self.c, quiet=True)   # daemon (re)started: its exclusion list starts empty
+            p = subprocess.Popen(["mullvad", "status", "--json", "listen"], stdout=subprocess.PIPE,
+                                 stderr=subprocess.DEVNULL, text=True)
+            for line in p.stdout:
+                line = line.strip()
+                if not line.startswith("{"):
+                    continue
+                try:
+                    self.on_status(parse_status(json.loads(line)))
+                except json.JSONDecodeError:
+                    continue
+            p.wait()
+            time.sleep(2)
+
+    def at_home(self):
+        mac = (self.c["dns"].get("home_gateway_mac") or "").lower()
+        if not mac:
+            return None
+        _, out, _ = run("ip", "route", "show", "default", "table", "main", timeout=3)
+        m = re.search(r"default via (\S+)", out)
+        if not m:
+            return False
+        gw = m.group(1)
+        for attempt in range(2):
+            _, n, _ = run("ip", "neigh", "show", gw, timeout=3)
+            hit = re.search(r"lladdr ([0-9a-f:]{17})", n)
+            if hit:
+                return hit.group(1).lower() == mac
+            run("ping", "-c1", "-W1", gw, timeout=3)   # just joined: nothing has talked to the router yet
+        return False
+
+    def apply_dns(self, force=False):
+        d = self.c["dns"]
+        if not d.get("home"):
+            return   # no home resolver configured: leave Mullvad's DNS setting alone
+        home = self.at_home()
+        if home is None:
+            return
+        mode = "home" if home else "away"
+        if mode == self.s.get("dns_mode") and not force:
+            return
+        if home:
+            rc, _, err = mv("dns", "set", "custom", *d["home"])
+        else:
+            rc, _, err = mv("dns", "set", "default", *[f"--block-{b}" for b in d.get("away_block", [])])
+        if rc == 0:
+            with self.lock:
+                changed = self.s.get("dns_mode") not in (None, mode)
+                self.s["dns_mode"] = mode
+                self.publish()
+            if changed:
+                notify("VPN DNS", f"{'home resolver ' + ', '.join(d['home']) if home else 'Mullvad DNS (away from home)'}", "low")
+        else:
+            log_event("dns", f"couldn't set {mode} DNS: {err[:120]}")
+
+    def routes(self):
+        pending = threading.Event()
+
+        def settle():
+            while True:
+                pending.wait()
+                time.sleep(2)            # a network change comes as a burst of route events
+                pending.clear()
+                try:
+                    self.apply_dns()
+                except Exception as e:  # noqa: BLE001 - keep the watcher alive
+                    log_event("dns", f"error {e}")
+        threading.Thread(target=settle, daemon=True).start()
+        while True:
+            p = subprocess.Popen(["ip", "-o", "monitor", "route"], stdout=subprocess.PIPE,
+                                 stderr=subprocess.DEVNULL, text=True)
+            for line in p.stdout:
+                if "default" in line:   # incl. Mullvad's own table: apply_dns only acts when home/away flips
+                    pending.set()
+            p.wait()
+            time.sleep(5)
+
+    def run(self):
+        STATE.mkdir(parents=True, exist_ok=True)
+        write(PIDFILE, f"{os.getpid()}\n")
+        self.publish()
+
+        def usr1(*_):
+            def again():
+                self.c = cfg()
+                with self.lock:
+                    self.refresh_settings()
+                    self.publish()
+                self.apply_dns(force=False)
+            threading.Thread(target=again, daemon=True).start()
+        signal.signal(signal.SIGUSR1, usr1)
+        threading.Thread(target=self.listen, daemon=True).start()
+        threading.Thread(target=self.routes, daemon=True).start()
+        time.sleep(3)
+        self.apply_dns(force=True)
+        while True:
+            time.sleep(3600)
+
+
+# ── split tunnelling ─────────────────────────────────────────────────────────
+def exclude_running(c=None, quiet=False):
+    """Move running apps listed in [split] apps (process names) and all their children outside the tunnel."""
+    c = c or cfg()
+    names = set(c["split"].get("apps", []))
+    if not names or not shutil.which("mullvad"):
+        return 0
+    procs = {}
+    for d in Path("/proc").iterdir():
+        if not d.name.isdigit():
+            continue
+        try:
+            comm = (d / "comm").read_text().strip()
+            ppid = int((d / "stat").read_text().rsplit(")", 1)[1].split()[1])
+        except (OSError, ValueError, IndexError):
+            continue
+        procs[int(d.name)] = (comm, ppid)
+    roots = {p for p, (comm, _) in procs.items() if comm in names}
+    kids = {}
+    for p, (_, pp) in procs.items():
+        kids.setdefault(pp, []).append(p)
+    todo, seen = list(roots), set()
+    while todo:
+        p = todo.pop()
+        if p not in seen:
+            seen.add(p); todo += kids.get(p, [])
+    done = 0
+    for p in sorted(seen):
+        try:
+            with open(EXCL_CGROUP, "w") as f:
+                f.write(f"{p}\n")
+            done += 1
+            continue
+        except OSError:
+            pass
+        if mv("split-tunnel", "add", str(p), timeout=4)[0] == 0:
+            done += 1
+    if not quiet:
+        print(f"{done} process(es) outside the tunnel ({', '.join(sorted({procs[p][0] for p in roots})) or 'none running'})")
+    return done
+
+
+def cmd_exclude(args):
+    if not args:
+        sys.exit("ember-vpn exclude CMD [ARGS...]")
+    if shutil.which("mullvad-exclude") and EXCL_CGROUP.parent.is_dir():
+        os.execvp("mullvad-exclude", ["mullvad-exclude", *args])
+    os.execvp(args[0], args)   # no Mullvad (yet): just run it
+
+
+# ── commands ─────────────────────────────────────────────────────────────────
+def cmd_status():
+    s = load_state() or live_status() or {"state": "daemon-down"}
+    print(json.dumps(bar_json(s), ensure_ascii=False))
+
+
+def connect():
+    intend("connect")
+    COMP.unlink(missing_ok=True)
+    return mv("connect")[0] == 0
+
+
+def disconnect(why="disconnect"):
+    intend(why)
+    return mv("disconnect")[0] == 0
+
+
+def cmd_toggle():
+    s = live_status() or {}
+    if s.get("state") in ("connected", "connecting"):
+        disconnect()
+    elif s.get("state") == "error":
+        intend("reconnect"); mv("reconnect")
+    else:
+        connect()
+
+
+def relay_choices(c):
+    data = None
+    for p in RELAY_CACHES:
+        try:
+            data = json.loads(p.read_text()); break
+        except (OSError, json.JSONDecodeError):
+            continue
+    if not data:
+        return []
+    own = c["relay"].get("ownership", "owned")
+    locs = data.get("locations", {})
+    cities = {}
+    for r in data.get("wireguard", {}).get("relays", []):
+        if not r.get("active", True) or (own == "owned" and not r.get("owned")) or (own == "rented" and r.get("owned")):
+            continue
+        k = r["location"]
+        e = cities.setdefault(k, {"n": 0, "daita": 0})
+        e["n"] += 1; e["daita"] += bool(r.get("daita"))
+    home_cc = (c["relay"].get("location") or ["se"])[0]
+    rows = []
+    for k, e in cities.items():
+        meta = locs.get(k, {})
+        cc, city = k.split("-", 1)
+        rows.append((cc != home_cc, meta.get("country", cc), meta.get("city", city), cc, city, e))
+    rows.sort()
+    return rows
+
+
+def cmd_relay(args):
+    c = cfg()
+    if args and args[0] == "set":
+        loc = args[1:] or ["default"]
+        if loc == ["default"]:
+            loc = list(c["relay"]["location"])
+        intend("relay")
+        rc, out, err = mv("relay", "set", "location", *loc)
+        if rc != 0:
+            notify("Relay not changed", err or out, "normal"); sys.exit(1)
+        return
+    # opened from the command deck: leave its submap first, or typing a city would fire deck keys
+    if run("hyprctl", "submap", timeout=3)[1] not in ("", "default"):
+        run("hyprctl", "dispatch", 'hl.dsp.submap("reset")', timeout=3)
+        if shutil.which(str(HOME / f".local/bin/{RICE}-deck")):
+            run(str(HOME / f".local/bin/{RICE}-deck"), "hide", timeout=3)
+    rows = relay_choices(c)
+    default = " ".join(c["relay"]["location"])
+    lines, keys = [f"★  Default  ·  {default}"], [c["relay"]["location"]]
+    lines.append("↻  Reconnect (new relay, same place)"); keys.append(["reconnect"])
+    for _, country, city, cc, cy, e in rows:
+        d = f"  ·  DAITA {e['daita']}" if e["daita"] else ""
+        lines.append(f"{country}  ·  {city}  ({e['n']}{d})"); keys.append([cc, cy])
+    i = rofi_pick(lines, "RELAY")
+    if i is None:
+        return
+    k = keys[i]
+    if k == ["reconnect"]:
+        intend("relay"); mv("reconnect"); return
+    intend("relay")
+    mv("relay", "set", "location", *k)
+    if (live_status() or {}).get("state") not in ("connected", "connecting"):
+        connect()
+
+
+def rofi_pick(lines, prompt):
+    theme = HOME / ".config/rofi/vpn.rasi"
+    cmd = ["rofi", "-dmenu", "-i", "-no-custom", "-format", "i", "-p", prompt]
+    if theme.exists():
+        cmd += ["-theme", str(theme)]
+    try:
+        r = subprocess.run(cmd, input="\n".join(lines), capture_output=True, text=True, timeout=300)
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return None
+    out = r.stdout.strip()
+    return int(out) if r.returncode == 0 and out.isdigit() else None
+
+
+def cmd_menu():
+    s = live_status() or {"state": "daemon-down"}
+    on = s.get("state") in ("connected", "connecting")
+    lock = lockdown_on()
+    where = " · ".join(x for x in (s.get("city"), s.get("relay")) if x)
+    items = [
+        (f"\U000f099e  Disconnect  ({where})" if on else f"{ICON['connected']}  Connect", cmd_toggle),
+        ("\U000f0450  Relay…", lambda: cmd_relay([])),
+        ("\u21bb  Reconnect (new relay)", lambda: (intend("relay"), mv("reconnect"))),
+        (f"{ICON['blocked']}  Lockdown: {'ON → turn off' if lock else 'off → turn on'}",
+         lambda: cmd_lockdown(["off" if lock else "on"])),
+    ]
+    i = rofi_pick([t for t, _ in items], "VPN")
+    if i is not None:
+        items[i][1]()
+
+
+def cmd_lockdown(args):
+    a = args[0] if args else "toggle"
+    on = {"on": True, "off": False, "toggle": not lockdown_on()}.get(a)
+    if on is None:
+        sys.exit("ember-vpn lockdown on|off|toggle")
+    mv("lockdown-mode", "set", "on" if on else "off")
+    notify("Lockdown " + ("on" if on else "off"),
+           "No internet unless the VPN is up" if on else "Traffic goes direct when the VPN is off", "low")
+    poke_daemon()
+
+
+def cmd_competitive(args):
+    a = args[0] if args else "status"
+    c = cfg()
+    action = c["competitive"].get("action", "disconnect")
+    if action == "none" or not shutil.which("mullvad"):
+        return
+    if a == "on":
+        s = live_status() or {}
+        if s.get("state") not in ("connected", "connecting"):
+            return
+        if action == "daita-off":
+            write(COMP, "daita\n"); mv("tunnel", "set", "daita", "off")
+        elif lockdown_on():
+            notify("VPN stays on", "Lockdown is on: disconnecting would cut the internet", "low")
+        else:
+            write(COMP, "connect\n"); disconnect("competitive")
+    elif a == "off":
+        what = read(COMP)
+        COMP.unlink(missing_ok=True)
+        if what == "daita":
+            mv("tunnel", "set", "daita", "on" if c["settings"].get("daita") else "off")
+        elif what == "connect":
+            intend("connect"); mv("connect")
+    poke_daemon()
+
+
+def cmd_setup():
+    c = cfg()
+    s = c["settings"]
+    onoff = lambda v: "on" if v else "off"   # noqa: E731
+    steps = [
+        ("lan", "set", "allow" if s.get("lan", True) else "block"),
+        ("auto-connect", "set", onoff(s.get("auto_connect"))),
+        ("lockdown-mode", "set", onoff(s.get("lockdown"))),
+        ("tunnel", "set", "quantum-resistant", onoff(s.get("quantum_resistant"))),
+        ("tunnel", "set", "daita", onoff(s.get("daita"))),
+        ("tunnel", "set", "daita-direct-only", onoff(s.get("daita_direct_only"))),
+        ("relay", "set", "ownership", c["relay"].get("ownership", "owned")),
+        ("relay", "set", "location", *c["relay"]["location"]),
+    ]
+    ok = True
+    for st in steps:
+        rc, out, err = mv(*st)
+        print(f"{'ok ' if rc == 0 else 'ERR'} mullvad {' '.join(st)}" + ("" if rc == 0 else f"  ({err or out})"))
+        ok &= rc == 0
+    poke_daemon()   # the watcher picks the home/away DNS
+    sys.exit(0 if ok else 1)
+
+
+def main():
+    a = sys.argv[1:]
+    if not a or a[0] in ("-h", "--help", "help"):
+        print(__doc__.strip()); return
+    cmd, args = a[0], a[1:]
+    if cmd == "daemon": Watcher().run()
+    elif cmd == "status": cmd_status()
+    elif cmd == "json": print(json.dumps(load_state() or live_status() or {}, indent=1))
+    elif cmd == "toggle": cmd_toggle()
+    elif cmd == "connect": connect()
+    elif cmd == "disconnect": disconnect()
+    elif cmd == "relay": cmd_relay(args)
+    elif cmd == "menu": cmd_menu()
+    elif cmd == "lockdown": cmd_lockdown(args)
+    elif cmd == "competitive": cmd_competitive(args)
+    elif cmd == "exclude": cmd_exclude(args)
+    elif cmd == "exclude-running": exclude_running()
+    elif cmd == "setup": cmd_setup()
+    elif cmd == "events":
+        for e in events(float(args[0]) if args else 24):
+            print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(e["t"])), e["kind"], e.get("detail", ""))
+    else:
+        sys.exit(f"ember-vpn: unknown command {cmd!r} (try `ember-vpn help`)")
+
+
+if __name__ == "__main__":
+    main()

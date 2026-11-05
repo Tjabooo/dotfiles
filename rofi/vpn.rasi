@@ -1,0 +1,7 @@
+/* ~/.config/rofi/vpn.rasi — Mullvad relay picker (ember-vpn relay / waybar right-click / deck R):
+   the power deck, wider, with its own title. Same file on both machines. */
+@import "~/.config/rofi/power.rasi"
+window        { width: 520px; }
+textbox-brand { content: "MULLVAD"; }
+textbox-hint  { content: "ENTER  ·  TYPE TO FILTER  ·  ESC"; }
+listview      { lines: 12; }

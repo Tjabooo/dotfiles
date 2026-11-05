@@ -7,4 +7,4 @@ Description=Hyprland session daemons (neon)
 BindsTo=graphical-session.target
 Wants=graphical-session-pre.target
 After=graphical-session-pre.target
-Wants=waybar.service dunst.service hypridle.service hyprpaper.service cliphist.service hyprpolkitagent.service neon-power.service
+Wants=waybar.service dunst.service hypridle.service hyprpaper.service cliphist.service hyprpolkitagent.service neon-power.service neon-vpn.service
