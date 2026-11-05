@@ -1,35 +1,60 @@
 // ~/.config/fastfetch/config.jsonc  —  EVA unit-01 (violet armour, fluorescent green)
-// One file, one logo (unit01.txt). Run plain `fastfetch`.
+// Logo: unit01.ans, a half-block pixel head built from unit01.pix by ./build-logo.py
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
   "logo": {
-    "type": "file",
-    "source": "~/.config/fastfetch/unit01.txt",
-    "color": { "1": "38;2;155;93;229", "2": "38;2;158;240;26" },
-    "padding": { "top": 1, "left": 2, "right": 4 }
+    "type": "file-raw",
+    "source": "~/.config/fastfetch/unit01.ans",
+    "width": 36,
+    "height": 16,
+    "padding": { "top": 3, "left": 2, "right": 4 }
   },
   "display": {
     "separator": " ",
-    "key": { "width": 8 },
+    "key": { "width": 9 },
     "color": { "keys": "38;2;155;93;229", "output": "38;2;224;224;240" },
     "percent": {
-      "type": ["num"],
+      "type": ["bar", "num"],
       "color": { "green": "38;2;158;240;26", "yellow": "38;2;255;195;113", "red": "38;2;255;82;82" }
+    },
+    "bar": {
+      "width": 10,
+      "char": { "elapsed": "■", "total": "■" },
+      "border": { "left": "", "right": "" },
+      "color": { "elapsed": "38;2;158;240;26", "total": "38;2;48;40;80" }
     }
   },
   "modules": [
-    "break",
     {
       "type": "title",
       "format": "{#1;38;2;158;240;26}初号機 {#0;38;2;224;224;240}{user-name}{#38;2;108;108;138}@{#38;2;155;93;229}{host-name}"
     },
-    { "type": "custom", "format": "{#38;2;108;108;138}EVANGELION TEST TYPE-01" },
-    "break",
-    { "type": "os",       "key": "OS",     "format": "{name}" },
-    { "type": "kernel",   "key": "KERNEL", "format": "{release}" },
-    { "type": "wm",       "key": "WM",     "format": "{pretty-name}" },
+    { "type": "custom", "format": "{#38;2;108;108;138}EVANGELION TEST TYPE-01 · 汎用人型決戦兵器" },
+
+    { "type": "custom", "format": "{#38;2;158;240;26}▍{#38;2;224;224;240}SYSTEM {#38;2;60;52;96}───────────────────────────" },
+    { "type": "os",       "key": "OS",      "format": "{name} {arch}" },
+    { "type": "kernel",   "key": "KERNEL",  "format": "{release}" },
+    { "type": "wm",       "key": "WM",      "format": "{pretty-name} {version} ({protocol-name})" },
+    { "type": "shell",    "key": "SHELL",   "format": "{pretty-name} {version}" },
+    { "type": "terminal", "key": "TERM",    "format": "{pretty-name}" },
+    { "type": "packages", "key": "PKGS",    "format": "{pacman} pacman · {flatpak-all} flatpak" },
+
+    { "type": "custom", "format": "{#38;2;158;240;26}▍{#38;2;224;224;240}UNIT {#38;2;60;52;96}─────────────────────────────" },
+    { "type": "host",     "key": "HOST",    "format": "{family}" },
+    { "type": "cpu",      "key": "CPU",     "format": "{name} @ {freq-max}" },
+    { "type": "gpu",      "key": "GPU",     "format": "{name}" },
+    { "type": "display",  "key": "DISPLAY", "format": "{width}x{height} @ {refresh-rate} Hz · {inch}\"" },
+
+    { "type": "custom", "format": "{#38;2;158;240;26}▍{#38;2;224;224;240}STATUS {#38;2;60;52;96}───────────────────────────" },
     { "type": "uptime",   "key": "ACTIVE" },
-    { "type": "memory",   "key": "LCL",    "format": "{used} / {total} · {percentage}" },
-    { "type": "battery",  "key": "POWER",  "format": "{capacity} · {status}" }
+    { "type": "memory",   "key": "LCL",     "format": "{percentage-bar} {used} / {total}" },
+    { "type": "disk",     "key": "DISK",    "folders": "/", "format": "{size-percentage-bar} {size-used} / {size-total}" },
+    { "type": "battery",  "key": "POWER",   "format": "{capacity-bar} {capacity}" },
+    { "type": "wifi",     "key": "LINK",    "format": "{protocol} · {signal-quality}" },
+    "break",
+    {
+      "type": "custom",
+      "format": "{#38;2;94;53;168}███{#38;2;155;93;229}███{#38;2;200;160;255}███{#38;2;158;240;26}███{#38;2;232;255;106}███{#38;2;241;91;181}███{#38;2;255;140;40}███"
+    }
   ]
 }
