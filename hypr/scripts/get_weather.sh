@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-API_KEY="e86wdau2kemmoh1j5fdr842p1m8pb44cc77akz4m"
+# Meteosource API key: $METEOSOURCE_API_KEY, or the first line of ~/.config/hypr/meteosource.key
+# (kept out of the repo). Without one the lock screen just shows no weather.
+API_KEY=${METEOSOURCE_API_KEY:-$(head -n1 "$HOME/.config/hypr/meteosource.key" 2>/dev/null)}
+[ -n "$API_KEY" ] || exit 0
 LOCATION="stockholm"
 UNITS="metric"
 
