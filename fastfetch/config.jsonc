@@ -1,166 +1,35 @@
+// ~/.config/fastfetch/config.jsonc  —  EVA unit-01 (violet armour, fluorescent green)
+// One file, one logo (unit01.txt). Run plain `fastfetch`.
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
   "logo": {
-    "type": "builtin",
-    "source": "arch",
-    "color": {
-      "1": "38;2;155;93;229",
-      "2": "38;2;241;91;181"
-    },
-    "padding": {
-      "top": 1,
-      "left": 2,
-      "right": 4
-    }
+    "type": "file",
+    "source": "~/.config/fastfetch/unit01.txt",
+    "color": { "1": "38;2;155;93;229", "2": "38;2;158;240;26" },
+    "padding": { "top": 1, "left": 2, "right": 4 }
   },
   "display": {
-    "separator": "  ",
-    "color": {
-      "keys": "38;2;155;93;229",
-      "title": "38;2;241;91;181",
-      "separator": "38;2;108;108;138"
-    },
-    "key": {
-      "width": 16
-    },
+    "separator": " ",
+    "key": { "width": 8 },
+    "color": { "keys": "38;2;155;93;229", "output": "38;2;224;224;240" },
     "percent": {
-      "type": 3
-    },
-    "bar": {
-      "char": {
-        "elapsed": "■",
-        "total": "■"
-      },
-      "width": 12
-    },
-    "size": {
-      "binaryPrefix": "iec"
+      "type": ["num"],
+      "color": { "green": "38;2;158;240;26", "yellow": "38;2;255;195;113", "red": "38;2;255;82;82" }
     }
   },
   "modules": [
+    "break",
     {
       "type": "title",
-      "format": "{#1}{#38;2;241;91;181}{user-name}{#38;2;108;108;138}@{#1}{#38;2;155;93;229}{host-name}"
+      "format": "{#1;38;2;158;240;26}初号機 {#0;38;2;224;224;240}{user-name}{#38;2;108;108;138}@{#38;2;155;93;229}{host-name}"
     },
+    { "type": "custom", "format": "{#38;2;108;108;138}EVANGELION TEST TYPE-01" },
     "break",
-    {
-      "type": "custom",
-      "format": "{#38;2;241;91;181}╭─ {#1}{#38;2;241;91;181}system{#}"
-    },
-    {
-      "type": "os",
-      "key": "│   os"
-    },
-    {
-      "type": "kernel",
-      "key": "│   kernel"
-    },
-    {
-      "type": "packages",
-      "key": "│ 󰏗  packages"
-    },
-    {
-      "type": "uptime",
-      "key": "│   uptime"
-    },
-    {
-      "type": "wm",
-      "key": "│   wm"
-    },
-    {
-      "type": "shell",
-      "key": "│   shell"
-    },
-    {
-      "type": "terminal",
-      "key": "│   terminal"
-    },
-    {
-      "type": "terminalfont",
-      "key": "│   font"
-    },
-    {
-      "type": "custom",
-      "format": "{#38;2;241;91;181}╰─{#}"
-    },
-    {
-      "type": "custom",
-      "format": "{#38;2;241;91;181}╭─ {#1}{#38;2;241;91;181}hardware{#}"
-    },
-    {
-      "type": "host",
-      "key": "│ 󰌢  model"
-    },
-    {
-      "type": "cpu",
-      "key": "│   cpu",
-      "temp": true
-    },
-    {
-      "type": "gpu",
-      "key": "│ 󰢮  gpu",
-      "temp": true
-    },
-    {
-      "type": "display",
-      "key": "│   display"
-    },
-    {
-      "type": "memory",
-      "key": "│ 󰍛  memory"
-    },
-    {
-      "type": "swap",
-      "key": "│ 󰓡  swap"
-    },
-    {
-      "type": "disk",
-      "key": "│   disk",
-      "folders": "/"
-    },
-    {
-      "type": "battery",
-      "key": "│   battery"
-    },
-    {
-      "type": "poweradapter",
-      "key": "│   power"
-    },
-    {
-      "type": "custom",
-      "format": "{#38;2;241;91;181}╰─{#}"
-    },
-    {
-      "type": "custom",
-      "format": "{#38;2;241;91;181}╭─ {#1}{#38;2;241;91;181}extras{#}"
-    },
-    {
-      "type": "wifi",
-      "key": "│   wifi"
-    },
-    {
-      "type": "localip",
-      "key": "│   local ip",
-      "showIpv4": true,
-      "compact": true
-    },
-    {
-      "type": "media",
-      "key": "│   playing"
-    },
-    {
-      "type": "locale",
-      "key": "│   locale"
-    },
-    {
-      "type": "custom",
-      "format": "{#38;2;241;91;181}╰─{#}"
-    },
-    "break",
-    {
-      "type": "colors",
-      "symbol": "circle",
-      "paddingLeft": 2
-    }
+    { "type": "os",       "key": "OS",     "format": "{name}" },
+    { "type": "kernel",   "key": "KERNEL", "format": "{release}" },
+    { "type": "wm",       "key": "WM",     "format": "{pretty-name}" },
+    { "type": "uptime",   "key": "ACTIVE" },
+    { "type": "memory",   "key": "LCL",    "format": "{used} / {total} · {percentage}" },
+    { "type": "battery",  "key": "POWER",  "format": "{capacity} · {status}" }
   ]
 }

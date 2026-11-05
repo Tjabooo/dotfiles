@@ -20,6 +20,7 @@ alias disable-sleep='systemd-inhibit --what=idle:sleep --why="Temporary disable 
 alias pear2pear-send='java -cp /home/tjabo/workspace/pear2pear/src pear2pear.Pear server'
 alias restart-waybar='~/.config/hypr/scripts/restart_waybar'
 alias nightmode='brightnessctl s 2500'
+alias chat='chatgpt --ozone-platform=wayland'
 
 # Oh My Posh prompt (Zsh)
 eval "$(~/.local/bin/oh-my-posh init zsh --config ~/.config/ohmyposh/midnight-neon.omp.json)"
@@ -28,7 +29,7 @@ eval "$(~/.local/bin/oh-my-posh init zsh --config ~/.config/ohmyposh/midnight-ne
 export EDITOR=nvim
 
 # Fastfetch
-fastfetch --config ~/.config/fastfetch/cat.jsonc
+fastfetch
 
 # Python venv
 # source ~/workspace/venv/bin/activate  # commented out by conda initialize
