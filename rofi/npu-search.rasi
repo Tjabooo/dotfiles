@@ -1,0 +1,8 @@
+/* ~/.config/rofi/npu-search.rasi: `npu search --rofi` (SUPER+ALT+S): the app deck, wider for
+   path:line hits, with its own title. Results are ranked by meaning (embeddings on the NPU). */
+@import "~/.config/rofi/deck.rasi"
+window        { width: 980px; }
+textbox-brand { content: "SEARCH"; }
+textbox-hint  { content: "ENTER OPEN IN EDITOR  ·  ESC CLOSE"; }
+textbox-foot  { content: "by meaning  ·  notes + code  ·  on the NPU"; }
+listview      { lines: 12; }

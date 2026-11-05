@@ -339,11 +339,10 @@ hl.bind("SUPER + Print", hl.dsp.exec_cmd(shot .. "edit"))  -- edit last saved sc
 
 -- NPU (npukit: ~/workspace/npukit): everything below runs on the Ryzen AI NPU via FastFlowLM
 local npu  = bin .. "npu "
-local deck = " --theme " .. HOME .. "/.config/rofi/deck.rasi"
 hl.bind("SUPER + SHIFT + Print", hl.dsp.exec_cmd(npu .. "ocr"))  -- region → text on clipboard (NPU OCR)
 hl.bind("SUPER + ALT + D", hl.dsp.exec_cmd(npu .. "dictate"))  -- dictate: press, talk, press again (NPU)
-hl.bind("SUPER + ALT + S", hl.dsp.exec_cmd(npu .. "search --rofi" .. deck))  -- semantic search notes + code (NPU)
-hl.bind("SUPER + ALT + N", hl.dsp.exec_cmd(npu .. "menu" .. deck))  -- NPU menu (models, OCR, dictate, unload)
+hl.bind("SUPER + ALT + S", hl.dsp.exec_cmd(npu .. "search --rofi"))  -- semantic search notes + code (NPU)
+hl.bind("SUPER + ALT + N", hl.dsp.exec_cmd(npu .. "menu"))  -- NPU menu (models, OCR, dictate, unload)
 
 -- Lock / power
 hl.bind("SUPER + L",      hl.dsp.exec_cmd("pidof hyprlock || hyprlock"))  -- lock

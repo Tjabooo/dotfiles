@@ -1,0 +1,6 @@
+/* ~/.config/rofi/npu.rasi: `npu menu` (SUPER+ALT+N / waybar NPU click): the power deck with its own title */
+@import "~/.config/rofi/power.rasi"
+window        { width: 460px; }
+textbox-brand { content: "NPU"; }
+textbox-hint  { content: "ENTER  ·  ESC"; }
+listview      { lines: 8; }

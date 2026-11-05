@@ -9,6 +9,10 @@ fast = "qwen3.5:4b"
 quality = "gpt-oss:20b"
 vision = "qwen3.5:4b"      # shares the chat model: no swap between OCR and chat
 
+[ui]
+menu_theme = "~/.config/rofi/npu.rasi"
+search_theme = "~/.config/rofi/npu-search.rasi"
+
 [search]
 # notes = the agent-mesh memory + Documents; code = ~/workspace
 roots = ["~/workspace", "~/Documents", "~/.agent-mesh/memory"]

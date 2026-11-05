@@ -121,7 +121,7 @@
     "return-type": "json",
     "signal": 16,
     "tooltip": true,
-    "on-click": "~/.local/bin/npu menu --theme ~/.config/rofi/deck.rasi",
+    "on-click": "~/.local/bin/npu menu",
     "on-click-right": "~/.local/bin/npu stop"
   },
 
