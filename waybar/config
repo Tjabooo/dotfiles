@@ -116,7 +116,6 @@
 
   "group/stats": {
     "orientation": "inherit",
-    "drawer": { "transition-duration": 300, "transition-left-to-right": false },
     "modules": ["cpu", "memory"]
   },
   "cpu":    { "interval": 2, "format": "<span size='8pt' weight='800' color='#6c6c8a'>CPU</span>  {usage}%" },

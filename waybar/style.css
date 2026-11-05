@@ -130,7 +130,11 @@ window#waybar.hidden {
 #mpris.paused { color: @muted; }
 
 /* ── States ──────────────────────────────────────────────── */
-#custom-awake { color: @muted; }
+#custom-awake {
+    color: @muted;
+    padding-left: 6px;               /* the Nerd Font eye glyph is off-centre */
+    padding-right: 12px;
+}
 #custom-awake.activated {
     color: @base;
     background: @violet;
