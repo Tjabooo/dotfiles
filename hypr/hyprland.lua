@@ -340,6 +340,7 @@ hl.bind("SUPER + Print", hl.dsp.exec_cmd(shot .. "edit"))  -- edit last saved sc
 -- NPU (npukit: ~/workspace/npukit): everything below runs on the Ryzen AI NPU via FastFlowLM
 local npu  = bin .. "npu "
 hl.bind("SUPER + SHIFT + Print", hl.dsp.exec_cmd(npu .. "ocr"))  -- region → text on clipboard (NPU OCR)
+hl.bind("SUPER + CTRL + Print", hl.dsp.exec_cmd(npu .. "ocr --translate"))  -- region → translated text on clipboard (NPU, default English)
 hl.bind("SUPER + ALT + D", hl.dsp.exec_cmd(npu .. "dictate"))  -- dictate: press, talk, press again (NPU)
 hl.bind("SUPER + ALT + S", hl.dsp.exec_cmd(npu .. "search --rofi"))  -- semantic search notes + code (NPU)
 hl.bind("SUPER + ALT + N", hl.dsp.exec_cmd(npu .. "menu"))  -- NPU menu (models, OCR, dictate, unload)
