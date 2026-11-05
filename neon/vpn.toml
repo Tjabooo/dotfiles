@@ -22,7 +22,10 @@ home = ["192.168.50.67"]    # AdGuard Home on the server, only while on the home
 away_block = ["ads", "trackers", "malware"]   # Mullvad DNS content blocking everywhere else
 
 [split]
-apps = []                   # everything goes through the tunnel on the laptop
+# process names kept outside the tunnel (with their children) by `neon-vpn exclude-running`; the launchers
+# start them through `neon-vpn exclude`. Discord: Cloudflare 403s Mullvad exits ("Network Error" window).
+# Excluded apps still work with lockdown on; everything else stays in the tunnel.
+apps = ["Discord", "discord"]
 
 [competitive]
 action = "none"

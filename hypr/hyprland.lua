@@ -30,7 +30,7 @@ local terminal = "alacritty"
 local browser  = "firefox"
 local files    = "thunar"
 local launcher = "rofi -show drun"
-local discord  = "discord"
+local discord  = HOME .. "/.local/bin/neon-vpn exclude discord"   -- outside the VPN: Cloudflare blocks Mullvad exits for Discord
 local spotify  = "spotify --enable-features=UseOzonePlatform --ozone-platform=wayland"   -- CEF, not Electron: ignores the env hint
 local bin      = HOME .. "/.local/bin/"
 local menu     = HOME .. "/.config/waybar/scripts/power-menu.sh"
