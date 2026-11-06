@@ -39,8 +39,9 @@
     show_indicators = no
     sticky_history = yes
     history_length = 30
-    # away from the keyboard for 2 min: notifications stay until you're back
-    idle_threshold = 120
+    # popups always time out (no idle hold: it kept them up while reading or watching,
+    # ticking an "Xm ago" age). Missed ones are in history: SUPER+N.
+    idle_threshold = 0
     dmenu = /usr/bin/rofi -dmenu -p GO -theme ~/.config/rofi/actions.rasi
     browser = /usr/bin/xdg-open
 
@@ -74,6 +75,11 @@
     history_ignore = yes
     timeout = 1.2
     format = "<b>%s</b>"
+
+# satty asks for "never expire" on its copy/save notices: time them out like the rest
+[satty]
+    appname = satty
+    override_dbus_timeout = 6
 
 # keep game/launcher spam quiet
 [steam]
