@@ -12,6 +12,7 @@ vision = "qwen3.5:4b"      # shares the chat model: no swap between OCR and chat
 [ui]
 menu_theme = "~/.config/rofi/npu.rasi"
 search_theme = "~/.config/rofi/npu-search.rasi"
+lang_theme = "~/.config/rofi/npu-lang.rasi"
 
 [search]
 # notes = the agent-mesh memory + Documents; code = ~/workspace
