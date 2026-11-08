@@ -59,6 +59,11 @@ hl.env("HYPRLAND_USE_FRACTIONAL_SCALE", 1)
 -- sharp at 1.5x scale instead of blurry XWayland, and less battery.
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
 hl.env("QT_QPA_PLATFORM", "wayland;xcb")
+-- deckskin cursor (Tjabooo/deckskin, ~/workspace/deckskin)
+hl.env("XCURSOR_THEME", "Neon-Deck")
+hl.env("HYPRCURSOR_THEME", "Neon-Deck")
+hl.env("XCURSOR_SIZE", 24)
+hl.env("HYPRCURSOR_SIZE", 24)
 
 ------------------------------------------------------------------
 -- AUTOSTART
