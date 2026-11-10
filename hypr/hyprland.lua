@@ -399,3 +399,10 @@ hl.define_submap("clip", function()
     hl.bind("catchall", clip_close)  -- any other key closes it too: the submap can never trap you
 end)
 -- <<< clipdeck
+
+-- >>> edgehop (software KVM, Tjabooo/edgehop): push the cursor off the left edge to drive magi
+-- magi's mouse shows up here as "edgehop …" devices while linked; give it magi's flat feel
+hl.device({ name = "edgehop-razer-razer-viper-v3-pro",   sensitivity = -0.5, accel_profile = "flat" })
+hl.device({ name = "edgehop-razer-razer-viper-v3-pro-1", sensitivity = -0.5, accel_profile = "flat" })
+hl.bind("SUPER + ALT + K", hl.dsp.exec_cmd(bin .. "edgehop switch"))  -- jump to magi / back
+-- <<< edgehop
