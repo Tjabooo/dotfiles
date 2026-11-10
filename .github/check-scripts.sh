@@ -7,7 +7,7 @@ severity=${1:-warning}
 status=0 py=0 sh=0
 while IFS= read -r -d '' f; do
   [ -f "$f" ] || continue
-  first=$(head -n1 "$f" 2>/dev/null | tr -d '\r' || true)
+  first=$(head -c 256 "$f" 2>/dev/null | tr -d '\000\r' | head -n1 || true)
   case "$first" in *zsh*) continue ;; esac
   if [[ $f == *.py || $first == '#!'*python* ]]; then
     py=$((py + 1))
