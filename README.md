@@ -82,8 +82,8 @@ when enabled in Windows Settings → System → Clipboard. If it is empty, disab
 or unavailable, the column shows the current Windows clipboard and says why.
 Selecting an older Windows item leaves Windows’ current clipboard unchanged.
 
-`homedir/.local/bin/clipdeck` launches the separately installed Archfleet helper
-at `~/.local/share/archfleet/clipdeck.py`. Archfleet (with clipdeck and its Windows desktop
+`homedir/.local/bin/clipdeck` launches clipdeck from the separately installed Archfleet
+binary at `~/.local/share/archfleet/archfleet` (Archfleet's installer links it there directly). Archfleet (with clipdeck and its Windows desktop
 bridge) is its own repo, [Tjabooo/archfleet](https://github.com/Tjabooo/archfleet): update both
 Arch machines with `git pull && ./install.sh` from a clone. The helper uses existing SSH aliases
 and the same-user Windows named pipe, without another network listener or cloud sync.

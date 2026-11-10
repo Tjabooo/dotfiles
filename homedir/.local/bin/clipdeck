@@ -1,2 +1,2 @@
 #!/bin/sh
-exec "/usr/bin/python3" "$HOME/.local/share/archfleet/clipdeck.py" "$@"
+exec "$HOME/.local/share/archfleet/archfleet" clipdeck "$@"
