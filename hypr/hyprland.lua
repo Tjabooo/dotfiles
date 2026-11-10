@@ -400,7 +400,7 @@ hl.define_submap("clip", function()
 end)
 -- <<< clipdeck
 
--- >>> edgehop (software KVM, Tjabooo/edgehop): push the cursor off the left edge to drive magi
+-- >>> edgehop (software KVM, Tjabooo/edgehop): push the cursor off the top edge to drive magi
 -- magi's mouse shows up here as "edgehop …" devices while linked; give it magi's flat feel
 hl.device({ name = "edgehop-razer-razer-viper-v3-pro",   sensitivity = -0.5, accel_profile = "flat" })
 hl.device({ name = "edgehop-razer-razer-viper-v3-pro-1", sensitivity = -0.5, accel_profile = "flat" })
