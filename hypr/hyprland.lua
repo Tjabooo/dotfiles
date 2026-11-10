@@ -405,4 +405,5 @@ end)
 hl.device({ name = "edgehop-razer-razer-viper-v3-pro",   sensitivity = -0.5, accel_profile = "flat" })
 hl.device({ name = "edgehop-razer-razer-viper-v3-pro-1", sensitivity = -0.5, accel_profile = "flat" })
 hl.bind("SUPER + ALT + K", hl.dsp.exec_cmd(bin .. "edgehop switch"))  -- jump to magi / back
+hl.bind("SUPER + ALT + L", hl.dsp.exec_cmd(bin .. "edgehop view"))  -- remote view on/off: see magi's screen here while driving it
 -- <<< edgehop
