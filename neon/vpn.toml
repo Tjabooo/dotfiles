@@ -17,7 +17,7 @@ daita = true
 daita_direct_only = true
 
 [dns]
-home = ["192.168.50.67"]    # AdGuard Home on the server, only while on the home network
+home = ["192.168.1.2"]      # your home DNS resolver (e.g. AdGuard Home), only while on the home network
 # home_gateway_mac: taken from ~/.config/marquee-house.env (HOME_GW_MAC)
 away_block = ["ads", "trackers", "malware"]   # Mullvad DNS content blocking everywhere else
 

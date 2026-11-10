@@ -1,0 +1,2 @@
+# secrets that live next to the configs but stay out of the repo
+hypr/meteosource.key
