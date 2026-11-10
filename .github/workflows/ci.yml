@@ -1,0 +1,17 @@
+name: CI
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Python scripts must parse; sh/bash scripts must pass shellcheck (error level).
+      - run: bash .github/check-scripts.sh error

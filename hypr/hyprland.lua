@@ -59,6 +59,11 @@ hl.env("HYPRLAND_USE_FRACTIONAL_SCALE", 1)
 -- sharp at 1.5x scale instead of blurry XWayland, and less battery.
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
 hl.env("QT_QPA_PLATFORM", "wayland;xcb")
+-- deckskin cursor (Tjabooo/deckskin, ~/workspace/deckskin)
+hl.env("XCURSOR_THEME", "Neon-Deck")
+hl.env("HYPRCURSOR_THEME", "Neon-Deck")
+hl.env("XCURSOR_SIZE", 24)
+hl.env("HYPRCURSOR_SIZE", 24)
 
 ------------------------------------------------------------------
 -- AUTOSTART
@@ -340,9 +345,21 @@ hl.bind("SUPER + Print", hl.dsp.exec_cmd(shot .. "edit"))  -- edit last saved sc
 -- NPU (npukit: ~/workspace/npukit): everything below runs on the Ryzen AI NPU via FastFlowLM
 local npu  = bin .. "npu "
 hl.bind("SUPER + SHIFT + Print", hl.dsp.exec_cmd(npu .. "ocr"))  -- region → text on clipboard (NPU OCR)
+hl.bind("SUPER + CTRL + Print", hl.dsp.exec_cmd(npu .. "ocr --pick"))  -- pick a language (searchable), then region → translated text on clipboard (NPU)
 hl.bind("SUPER + ALT + D", hl.dsp.exec_cmd(npu .. "dictate"))  -- dictate: press, talk, press again (NPU)
 hl.bind("SUPER + ALT + S", hl.dsp.exec_cmd(npu .. "search --rofi"))  -- semantic search notes + code (NPU)
 hl.bind("SUPER + ALT + N", hl.dsp.exec_cmd(npu .. "menu"))  -- NPU menu (models, OCR, dictate, unload)
+hl.bind("SUPER + CTRL + T", hl.dsp.exec_cmd(npu .. "translate"))  -- translate a message: pick language, write, Enter (again = type it) (NPU)
+-- while the translate overlay is open (npukit enters this submap via [translate] on_open): Esc closes it.
+-- No catchall: every other key has to reach the overlay's text field.
+local function npu_translate_close()
+    hl.exec_cmd(npu .. "translate --close")
+    hl.dispatch(hl.dsp.submap("reset"))
+end
+hl.define_submap("npu-translate", function()
+    hl.bind("Escape", npu_translate_close)
+    hl.bind("SUPER + CTRL + T", npu_translate_close)
+end)
 
 -- Lock / power
 hl.bind("SUPER + L",      hl.dsp.exec_cmd("pidof hyprlock || hyprlock"))  -- lock

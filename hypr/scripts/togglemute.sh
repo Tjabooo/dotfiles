@@ -1,3 +1,4 @@
+#!/bin/sh
 ismuted=$(pactl get-sink-mute @DEFAULT_SINK@)
 
 if [ "$ismuted" = "Mute: no" ]

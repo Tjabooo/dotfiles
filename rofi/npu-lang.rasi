@@ -1,0 +1,8 @@
+/* ~/.config/rofi/npu-lang.rasi: `npu ocr --pick` (SUPER+CTRL+Print): the app deck as a language
+   search. Recent languages lead (accent colour); Enter repeats the last one. */
+@import "~/.config/rofi/deck.rasi"
+window        { width: 560px; }
+textbox-brand { content: "TRANSLATE"; }
+textbox-hint  { content: "ENTER PICK  ·  ESC CLOSE"; }
+textbox-foot  { content: "then select a region  ·  copied  ·  on the NPU"; }
+listview      { lines: 10; }
