@@ -14,6 +14,10 @@
   ember-vpn competitive on|off     called by `ember mode`: put the VPN in its gaming state and back
   ember-vpn exclude CMD [ARGS...]  run CMD outside the tunnel (plain exec when Mullvad isn't there)
   ember-vpn exclude-running        move already-running apps from [split] apps outside the tunnel
+  ember-vpn bypass                 local SOCKS5 proxy outside the tunnel for the [split] sites only, plus a
+                                   PAC file the browser uses (systemd user unit <rice>-vpn-bypass.service)
+  ember-vpn site add|rm DOMAIN...  let a site that refuses Mullvad skip the tunnel in the browser (or put it
+                                   back); `site list`; `site test DOMAIN` compares it in and outside the tunnel
   ember-vpn setup                  apply the settings in vpn.toml to the Mullvad daemon (idempotent)
   ember-vpn events [HOURS]         drops / leaks / errors from the last HOURS (default 24)
 
@@ -43,6 +47,7 @@ EVENTS = STATE / "vpn-events.jsonl"
 INTENT = STATE / "vpn-intent"      # "<what> <epoch>": a change we asked for, so it isn't reported as a drop
 COMP = STATE / "vpn-competitive"   # competitive mode is holding the VPN off; restore on `competitive off`
 PIDFILE = STATE / "vpn-daemon.pid"
+PAC = STATE / "vpn-bypass.pac"     # browser proxy auto-config: [split] sites -> the bypass proxy, rest direct
 EXCL_CGROUP = Path("/sys/fs/cgroup/net_cls/mullvad-exclusions/cgroup.procs")
 RELAY_CACHES = [Path("/var/cache/mullvad-vpn/relays.json"), Path("/opt/Mullvad VPN/resources/relays.json")]
 
@@ -54,7 +59,7 @@ DEFAULTS = {
     "settings": {"auto_connect": True, "lockdown": False, "lan": True, "quantum_resistant": True,
                  "daita": True, "daita_direct_only": True},
     "dns": {"home": [], "home_gateway_mac": "", "away_block": ["ads", "trackers", "malware"]},
-    "split": {"apps": []},
+    "split": {"apps": [], "sites": [], "bypass_port": 1081},
     "competitive": {"action": "disconnect"},   # disconnect | daita-off | none
     "drop_grace": 8,                           # seconds without the tunnel before a reconnect counts as a drop
 }
@@ -474,13 +479,50 @@ class Watcher:
         signal.signal(signal.SIGUSR1, usr1)
         threading.Thread(target=self.listen, daemon=True).start()
         threading.Thread(target=self.routes, daemon=True).start()
+        threading.Thread(target=self.split_guard, daemon=True).start()
         time.sleep(3)
         self.apply_dns(force=True)
         while True:
             time.sleep(3600)
 
+    def split_guard(self):
+        """Keep [split] apps outside the tunnel even when something starts them without `ember-vpn exclude`.
+        2026-11-10: Steam restarted over SSH stayed in the tunnel, so CS2's listen server ran behind
+        DAITA and friends got kicked from every hosted game ~40 s in."""
+        stuck = set()   # PIDs that can't be moved (zombies, races): don't retry them every pass
+        while True:
+            time.sleep(30)
+            if not EXCL_CGROUP.parent.is_dir():
+                continue
+            stray = [p for p in split_apps_in_tunnel(self.c) if p not in stuck]
+            if not stray:
+                continue
+            exclude_running(self.c, quiet=True)
+            left = set(split_apps_in_tunnel(self.c))
+            moved = [p for p in stray if p not in left]
+            stuck |= left
+            if moved:
+                print(f"split tunnel: moved {len(moved)} escaped app(s) (pid {', '.join(map(str, moved))}) "
+                      "and their children outside the tunnel", flush=True)
+
 
 # ── split tunnelling ─────────────────────────────────────────────────────────
+def split_apps_in_tunnel(c):
+    """PIDs of running [split] apps that are still inside the tunnel (not in Mullvad's exclusion cgroup)."""
+    names = set(c["split"].get("apps", []))
+    out = []
+    for d in Path("/proc").iterdir():
+        if not d.name.isdigit():
+            continue
+        try:
+            if (d / "comm").read_text().strip() in names and \
+                    "mullvad-exclusions" not in (d / "cgroup").read_text():
+                out.append(int(d.name))
+        except OSError:
+            continue
+    return out
+
+
 def exclude_running(c=None, quiet=False):
     """Move running apps listed in [split] apps (process names) and all their children outside the tunnel."""
     c = c or cfg()
@@ -528,6 +570,194 @@ def cmd_exclude(args):
     if shutil.which("mullvad-exclude") and EXCL_CGROUP.parent.is_dir():
         os.execvp("mullvad-exclude", ["mullvad-exclude", *args])
     os.execvp(args[0], args)   # no Mullvad (yet): just run it
+
+
+# ── site bypass ──────────────────────────────────────────────────────────────
+# Mullvad can only split whole apps. Some sites refuse Mullvad exits (2026-11-11: amazon.se answers most
+# requests from se-sto-wg-209 with "Ett oväntat fel har inträffat", always fine from the home IP), so the
+# browser sends just those domains (PAC file) to a tiny SOCKS5 proxy that runs outside the tunnel.
+# The proxy only connects to [split] sites on ports 80/443; if it's down the PAC falls back to the tunnel.
+def bypass_sites(c):
+    return sorted({d.strip().lower().strip(".") for d in c["split"].get("sites", []) if d.strip()})
+
+
+def site_ok(host, sites):
+    h = host.lower().rstrip(".")
+    return any(h == d or h.endswith("." + d) for d in sites)
+
+
+def write_pac(c):
+    sites, port = bypass_sites(c), int(c["split"].get("bypass_port", 1081))
+    STATE.mkdir(parents=True, exist_ok=True)
+    tmp = PAC.with_suffix(".tmp")
+    tmp.write_text(
+        f"// written by {RICE}-vpn from [split] sites in {CONF}; edit that, not this\n"
+        "function FindProxyForURL(url, host) {\n"
+        "  var h = host.toLowerCase();\n"
+        f"  var sites = {json.dumps(sites)};\n"
+        "  for (var i = 0; i < sites.length; i++)\n"
+        "    if (h == sites[i] || dnsDomainIs(h, \".\" + sites[i]))\n"
+        f"      return \"SOCKS5 127.0.0.1:{port}; DIRECT\";\n"
+        "  return \"DIRECT\";\n"
+        "}\n")
+    tmp.replace(PAC)
+
+
+def leave_tunnel():
+    """Put this process outside the tunnel; True when it is (or there is no Mullvad split tunnel)."""
+    if not EXCL_CGROUP.parent.is_dir():
+        return False
+    if "mullvad-exclusions" in Path("/proc/self/cgroup").read_text():
+        return True
+    try:
+        with open(EXCL_CGROUP, "w") as f:
+            f.write(f"{os.getpid()}\n")
+    except OSError:
+        mv("split-tunnel", "add", str(os.getpid()), timeout=4)
+    return "mullvad-exclusions" in Path("/proc/self/cgroup").read_text()
+
+
+def cmd_bypass():
+    import asyncio, ipaddress
+    c = cfg()
+    sites, port = bypass_sites(c), int(c["split"].get("bypass_port", 1081))
+    write_pac(c)
+    if not sites:
+        print(f"no [split] sites in {CONF} yet: proxy idles until `{RICE}-vpn site add` adds one", flush=True)
+
+    async def pipe(r, w):
+        try:
+            while data := await r.read(65536):
+                w.write(data); await w.drain()
+        except (OSError, asyncio.CancelledError):
+            pass
+        finally:
+            w.close()
+
+    seen = {"mtime": CONF.stat().st_mtime if CONF.exists() else 0}
+
+    def current_sites():
+        nonlocal sites
+        try:
+            m = CONF.stat().st_mtime
+        except OSError:
+            return sites
+        if m != seen["mtime"]:
+            seen["mtime"] = m
+            sites = bypass_sites(cfg())
+            print(f"sites reloaded: {', '.join(sites)}", flush=True)
+        return sites
+
+    async def handle(r, w):
+        async def reply(code):
+            w.write(bytes([5, code, 0, 1, 0, 0, 0, 0, 0, 0])); await w.drain()
+        try:
+            ver, n = await asyncio.wait_for(r.readexactly(2), 10)
+            await r.readexactly(n)
+            if ver != 5:
+                return w.close()
+            w.write(b"\x05\x00"); await w.drain()
+            ver, cmd, _, atyp = await r.readexactly(4)
+            if atyp == 3:
+                host = (await r.readexactly((await r.readexactly(1))[0])).decode("idna")
+            elif atyp in (1, 4):
+                host = str(ipaddress.ip_address(await r.readexactly(4 if atyp == 1 else 16)))
+            else:
+                return await reply(8)
+            dport = int.from_bytes(await r.readexactly(2), "big")
+            if cmd != 1 or dport not in (80, 443) or not site_ok(host, current_sites()):
+                print(f"refused {host}:{dport}", flush=True)
+                return await reply(2)            # connection not allowed by ruleset
+            if not leave_tunnel():
+                print("not outside the tunnel (yet): sending it through the VPN", flush=True)
+            try:
+                ur, uw = await asyncio.wait_for(asyncio.open_connection(host, dport), 15)
+            except (OSError, asyncio.TimeoutError):
+                return await reply(4)            # host unreachable
+            await reply(0)
+            await asyncio.gather(pipe(r, uw), pipe(ur, w))
+        except (OSError, asyncio.IncompleteReadError, asyncio.TimeoutError, ValueError, UnicodeError):
+            w.close()
+
+    async def main():
+        srv = await asyncio.start_server(handle, "127.0.0.1", port)
+        print(f"bypass proxy on 127.0.0.1:{port} for {', '.join(sites)}; "
+              f"outside tunnel: {leave_tunnel()}; PAC {PAC}", flush=True)
+        async with srv:
+            await srv.serve_forever()
+    asyncio.run(main())
+
+
+def site_name(arg):
+    """'https://www.Example.com/x' -> 'example.com'."""
+    h = re.sub(r"^[a-z]+://", "", arg.strip().lower()).split("/")[0].split(":")[0].strip(".")
+    return h[4:] if h.startswith("www.") else h
+
+
+def save_sites(sites):
+    """Rewrite `sites = [...]` under [split] in vpn.toml, keeping everything else (comments too) as is."""
+    txt = CONF.read_text() if CONF.exists() else ""
+    items = [json.dumps(d) for d in sorted(set(sites))]
+    lines, cur = [], "sites = ["
+    for it in items:
+        if len(cur) + len(it) > 108:
+            lines.append(cur.rstrip()); cur = "         "
+        cur += it + ", "
+    lines.append(cur.rstrip(", ") + "]")
+    block = "\n".join(lines)
+    pat = re.compile(r"(?ms)^sites\s*=\s*\[.*?\]")
+    sec = re.search(r"(?m)^\[split\]\s*$", txt)
+    if sec:
+        nxt = re.search(r"(?m)^\[", txt[sec.end():])
+        end = sec.end() + (nxt.start() if nxt else len(txt) - sec.end())
+        body = txt[sec.end():end]
+        body = pat.sub(lambda _: block, body, 1) if pat.search(body) else body.rstrip("\n") + "\n" + block + "\n\n"
+        txt = txt[:sec.end()] + body + txt[end:]
+    else:
+        txt = txt.rstrip("\n") + "\n\n[split]\n" + block + "\n"
+    CONF.write_text(txt)
+
+
+def probe(url, excluded):
+    cmd = ["curl", "-s", "-o", "/dev/null", "-m", "12", "-w", "%{http_code}",
+           "-A", "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0",
+           "-H", "Accept: text/html", url]
+    if excluded:
+        cmd = ["mullvad-exclude", *cmd]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+        return r.stdout.strip() or "fail"
+    except (OSError, subprocess.TimeoutExpired):
+        return "fail"
+
+
+def cmd_site(args):
+    sub, names = (args[0] if args else "list"), [site_name(a) for a in args[1:] if site_name(a)]
+    sites = bypass_sites(cfg())
+    if sub in ("add", "rm", "remove", "del"):
+        if not names:
+            sys.exit(f"{RICE}-vpn site {sub} DOMAIN...")
+        new = sorted(set(sites) | set(names)) if sub == "add" else [d for d in sites if d not in names]
+        if new == sites:
+            print("nothing to change"); return
+        save_sites(new)
+        write_pac(cfg())
+        verb = "skips" if sub == "add" else "goes back into"
+        print(f"{', '.join(names)} now {verb} the tunnel (in the browser). The proxy picked it up already;")
+        print("Firefox reads the list on start: restart it, or Settings > Network Settings > Reload.")
+        print("A site that pulls pages/images from other domains may need those added too.")
+    elif sub == "list":
+        print("\n".join(sites) or f"(none: `{RICE}-vpn site add DOMAIN`)")
+    elif sub == "test":
+        for d in names or sites:
+            url = f"https://{'www.' if d.count('.') == 1 else ''}{d}/"
+            vpn, home = probe(url, False), probe(url, True)
+            note = ("looks blocked over the VPN: try `site add`" if vpn != home and home.startswith(("2", "3"))
+                    else "same both ways")
+            print(f"{d:30} vpn {vpn:4}  outside {home:4}  {note}")
+        print("(curl only sees the first answer; a site can still break later in a real browser)")
+    else:
+        sys.exit(f"{RICE}-vpn site add|rm|list|test [DOMAIN...]")
 
 
 # ── commands ─────────────────────────────────────────────────────────────────
@@ -689,6 +919,7 @@ def cmd_competitive(args):
 
 def cmd_setup():
     c = cfg()
+    write_pac(c)   # the browser reads it even when the bypass proxy is not running
     s = c["settings"]
     onoff = lambda v: "on" if v else "off"   # noqa: E731
     steps = [
@@ -727,6 +958,8 @@ def main():
     elif cmd == "competitive": cmd_competitive(args)
     elif cmd == "exclude": cmd_exclude(args)
     elif cmd == "exclude-running": exclude_running()
+    elif cmd == "bypass": cmd_bypass()
+    elif cmd == "site": cmd_site(args)
     elif cmd == "setup": cmd_setup()
     elif cmd == "events":
         for e in events(float(args[0]) if args else 24):

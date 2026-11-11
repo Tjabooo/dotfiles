@@ -26,6 +26,12 @@ away_block = ["ads", "trackers", "malware"]   # Mullvad DNS content blocking eve
 # start them through `neon-vpn exclude`. Discord: Cloudflare 403s Mullvad exits ("Network Error" window).
 # Excluded apps still work with lockdown on; everything else stays in the tunnel.
 apps = ["Discord", "discord"]
+# sites that refuse Mullvad exits: the browser reaches them outside the tunnel through the bypass proxy
+# (`vpn-site add|rm|list|test DOMAIN` edits this; a localhost SOCKS5 proxy only connects to these, rest stays in the tunnel).
+# Amazon: "Ett oväntat fel har inträffat" on most loads from Mullvad (2026-11-11).
+sites = ["amazon.se", "amazon.com", "amazon.co.uk", "amazon.de", "amazon.fr", "amazon.it", "amazon.es",
+         "amazon.nl", "amazon.pl", "amazon.eu", "media-amazon.com", "ssl-images-amazon.com",
+         "images-amazon.com", "awswaf.com", "a2z.com"]
 
 [competitive]
 action = "none"

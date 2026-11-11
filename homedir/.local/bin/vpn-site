@@ -1,0 +1,5 @@
+#!/bin/sh
+# vpn-site add|rm|list|test DOMAIN: sites the browser reaches outside Mullvad (same on every machine)
+d=$(dirname "$(readlink -f "$0")")
+for v in "$d/ember-vpn" "$d/neon-vpn"; do [ -x "$v" ] && exec "$v" site "$@"; done
+echo "vpn-site: no ember-vpn/neon-vpn next to $0" >&2; exit 1
