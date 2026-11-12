@@ -159,7 +159,7 @@ window#waybar.hidden {
     to   { opacity: 0.55; }
 }
 
-/* home server health (marquee-house): calm when fine, pink when something needs a look */
+/* home server health (lilin-house): calm when fine, pink when something needs a look */
 #custom-house.ok     { color: @lavender; }
 #custom-house.issues { color: @pink; }
 #custom-house.down   { color: @muted; }

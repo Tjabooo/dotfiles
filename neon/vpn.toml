@@ -11,14 +11,14 @@ ownership = "owned"         # Mullvad-owned servers only
 [settings]
 auto_connect = true
 lockdown = true             # the laptop travels: no internet unless the VPN is up (LAN still works)
-lan = true                  # SSH, Marquee, Archfleet, clipboard bridge on the home network
+lan = true                  # SSH, Lilin, Archfleet, clipboard bridge on the home network
 quantum_resistant = true
 daita = true
 daita_direct_only = true
 
 [dns]
 home = ["192.168.50.67"]    # AdGuard Home on the server, only while on the home network
-# home_gateway_mac: taken from ~/.config/marquee-house.env (HOME_GW_MAC)
+# home_gateway_mac: taken from ~/.config/lilin-house.env (HOME_GW_MAC)
 away_block = ["ads", "trackers", "malware"]   # Mullvad DNS content blocking everywhere else
 
 [split]

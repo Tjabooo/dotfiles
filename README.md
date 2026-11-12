@@ -54,8 +54,8 @@ units, so they restart when they crash and log to `journalctl --user -u <name>`.
   `-- comments` on the binds in hyprland.lua; Esc / Enter / `SUPER+/` close it. `keys` prints it in the terminal.
 - Power menu (`SUPER+Escape`) shows all six entries without scrolling and can do a one-shot reboot
   into Windows (GRUB or systemd-boot, whichever booted).
-- **House dot** (waybar `custom/house`): home server health from Marquee's House tab via
-  `marquee-house` (lives in the marquee repo, `agents/`); hidden away from home or when not installed.
+- **House dot** (waybar `custom/house`): home server health from Lilin's House tab via
+  `lilin-house` (lives in the lilin repo, `agents/`); hidden away from home or when not installed.
 
 ## NPU tools (npukit)
 

@@ -2,7 +2,7 @@
 """ember-vpn: the Mullvad VPN, wired into the rice (waybar, deck, MAGI panel, dunst, launchers).
 
   ember-vpn daemon                 watcher (systemd user unit, part of the session target): follows
-                                   `mullvad status --json listen`, writes state for waybar/MAGI/marquee-house,
+                                   `mullvad status --json listen`, writes state for waybar/MAGI/lilin-house,
                                    notifies on connect / drop / relay change, logs drops and leaks,
                                    and switches DNS between the home resolver and Mullvad's
   ember-vpn status | json          waybar JSON / full state
@@ -40,7 +40,7 @@ HOME = Path.home()
 RICE = os.environ.get("VPN_RICE") or (Path(sys.argv[0]).name.split("-")[0] or "ember")
 CONF = Path(os.environ.get("XDG_CONFIG_HOME", HOME / ".config")) / RICE / "vpn.toml"
 STATE = Path(os.environ.get("XDG_STATE_HOME", HOME / ".local/state")) / RICE
-HOUSE_STATE = Path(os.environ.get("XDG_STATE_HOME", HOME / ".local/state")) / "marquee-house"
+HOUSE_STATE = Path(os.environ.get("XDG_STATE_HOME", HOME / ".local/state")) / "lilin-house"
 SF = STATE / "vpn.json"            # full state (MAGI panel, emberd, Archfleet)
 BAR = STATE / "vpn-bar.json"       # pre-rendered waybar JSON: the module just reads it on a signal
 EVENTS = STATE / "vpn-events.jsonl"
@@ -77,9 +77,9 @@ def cfg():
             c[k].update(v)
         else:
             c[k] = v
-    if not c["dns"].get("home_gateway_mac"):   # same "is this home?" test marquee-house uses
+    if not c["dns"].get("home_gateway_mac"):   # same "is this home?" test lilin-house uses
         try:
-            m = re.search(r'^HOME_GW_MAC="?([0-9a-fA-F:]{17})', (HOME / ".config/marquee-house.env").read_text(), re.M)
+            m = re.search(r'^HOME_GW_MAC="?([0-9a-fA-F:]{17})', (HOME / ".config/lilin-house.env").read_text(), re.M)
             c["dns"]["home_gateway_mac"] = m.group(1).lower() if m else ""
         except OSError:
             pass

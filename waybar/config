@@ -81,10 +81,10 @@
     "on-click": "alacritty -e sh -c '~/.local/bin/neon-update; printf \"\\npress Enter to close \"; read _'"
   },
 
-  // home server health (Marquee's House tab): hidden away from home and until marquee-house is installed
+  // home server health (Lilin's House tab): hidden away from home and until lilin-house is installed
   "custom/house": {
-    "exec": "~/.local/bin/marquee-house status",
-    "exec-if": "test -x ~/.local/bin/marquee-house",
+    "exec": "~/.local/bin/lilin-house status",
+    "exec-if": "test -x ~/.local/bin/lilin-house",
     "return-type": "json",
     "interval": 300,
     "signal": 9,
