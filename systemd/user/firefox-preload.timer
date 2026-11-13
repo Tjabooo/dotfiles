@@ -1,0 +1,7 @@
+[Unit]
+Description=Preload Firefox shortly after desktop login
+PartOf=graphical-session.target
+
+[Timer]
+OnActiveSec=5s
+AccuracySec=1s

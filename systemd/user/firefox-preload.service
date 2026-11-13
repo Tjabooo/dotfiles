@@ -1,0 +1,16 @@
+[Unit]
+Description=Warm the Firefox startup files in the page cache
+PartOf=graphical-session.target
+ConditionFileIsExecutable=/usr/lib/firefox/firefox
+
+[Service]
+Type=oneshot
+ExecCondition=/usr/bin/sh -c '! /usr/bin/pgrep -x "firefox|cs2" >/dev/null'
+ExecStart=/usr/bin/dd if=/usr/lib/firefox/firefox of=/dev/null bs=1M status=none
+ExecStart=/usr/bin/dd if=/usr/lib/firefox/libxul.so of=/dev/null bs=1M status=none
+ExecStart=/usr/bin/dd if=/usr/lib/firefox/omni.ja of=/dev/null bs=1M status=none
+ExecStart=/usr/bin/dd if=/usr/lib/firefox/browser/omni.ja of=/dev/null bs=1M status=none
+StandardOutput=null
+Nice=19
+IOSchedulingClass=idle
+TimeoutStartSec=15s

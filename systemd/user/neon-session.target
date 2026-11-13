@@ -8,3 +8,5 @@ BindsTo=graphical-session.target
 Wants=graphical-session-pre.target
 After=graphical-session-pre.target
 Wants=waybar.service dunst.service hypridle.service hyprpaper.service cliphist.service hyprpolkitagent.service neon-power.service neon-vpn.service
+
+Wants=firefox-preload.timer
