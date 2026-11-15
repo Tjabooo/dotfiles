@@ -11,7 +11,7 @@ The desktop lives in `Tjabooo/dotfiles-desktop` ("ember"); this one is for media
 | `vesktop/themes/` | `~/.config/vesktop/themes/` (Vesktop) and `~/.config/Vencord/themes/` (Discord + Vencord) |
 | `mimeapps.list` | `~/.config/mimeapps.list` |
 | `homedir/.zshrc .bashrc .bash_profile` | `~/` |
-| `homedir/.local/bin/neon-*`, `homedir/.local/bin/clipdeck`, `homedir/.local/bin/screen-awake` | `~/.local/bin/` |
+| `homedir/.local/bin/neon-*`, `homedir/.local/bin/clipdeck`, `homedir/.local/bin/screen-awake`, `homedir/.local/bin/fanmax` | `~/.local/bin/` |
 | `homedir/.local/share/neon/` | `~/.local/share/neon/` (system-fixes.sh, GRUB theme builder, 10_neon source) |
 | `system/etc/…`, `system/usr/local/bin/…` | the same paths under `/` (root-owned; copy with sudo) |
 
@@ -89,6 +89,15 @@ Arch machines with `git pull && ./install.sh` from a clone. The helper uses exis
 and the same-user Windows named pipe, without another network listener or cloud sync.
 The overlay stores only its visible previews temporarily in the private runtime
 directory while open. Clipboard contents and credentials stay out of this repo.
+
+## fanmax
+
+`homedir/.local/bin/fanmax` toggles every fan to absolute full speed: it sets the ASUS
+`fan_state` mode to full and forces the CPU and GPU fan overrides (WMI `0x00110013` /
+`0x00110014`) on. Running it again restores the previous mode and overrides, saved in
+`$XDG_RUNTIME_DIR/fanmax.state`. `fanmax status` shows the state and fan RPM. It needs no
+sudo (it uses the debugfs files opened by `asus-fan-permissions.service`). Sleep resets the
+overrides, so a state file from before a suspend is ignored and the next run turns fanmax on.
 
 ## Discord / Vesktop theme
 

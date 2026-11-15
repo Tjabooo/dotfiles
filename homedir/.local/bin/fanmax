@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# fanmax: toggle every fan on this ASUS laptop to absolute full speed and back.
+#   1st run: saves the current fan setup, then sets fan_state "full" and forces the
+#            CPU + GPU fan overrides (WMI 0x00110013 / 0x00110014) to full speed.
+#   2nd run: puts back exactly what was there before.
+# Needs no sudo: uses the debugfs files opened up by asus-fan-permissions.service.
+# fanmax status  -> show the current state without changing anything.
+set -euo pipefail
+
+WMI=/sys/kernel/debug/asus-nb-wmi
+STATE="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/fanmax.state"
+CPU_DEV=0x00110013 GPU_DEV=0x00110014 MODE_DEV=0x00110019
+
+hwmon() { for h in /sys/class/hwmon/hwmon*; do [[ $(<"$h/name") == asus ]] && { echo "$h"; return; }; done; }
+HW=$(hwmon)
+[[ -n $HW && -w $WMI/dev_id ]] || { echo "fanmax: ASUS fan control not available (asus-fan-permissions.service?)" >&2; exit 1; }
+
+wmi_set() { echo "$1" >"$WMI/dev_id"; echo "$2" >"$WMI/ctrl_param"; cat "$WMI/devs" >/dev/null; }
+mode_now() { echo $MODE_DEV >"$WMI/dev_id"; printf '%d' $(( $(sed 's/.*= //' "$WMI/dsts") & 0xff )); }
+suspends() { cat /sys/power/suspend_stats/success 2>/dev/null || echo 0; }
+# pwmN_enable is the driver's view of the override (0 = forced full); our debugfs
+# writes don't touch it, so it still tells us what the user had set before.
+forced() { [[ $(<"$HW/pwm$1_enable") == 0 ]] && echo 1 || echo 0; }
+rpm() { echo "CPU $(<"$HW/fan1_input") RPM, GPU $(<"$HW/fan2_input") RPM"; }
+
+active() {
+  [[ -f $STATE ]] || return 1
+  # Sleep resets the overrides, so a state file from before a suspend is stale.
+  local s; s=$(sed -n 's/^suspends=//p' "$STATE")
+  [[ $s == "$(suspends)" ]]
+}
+
+if [[ ${1:-} == status ]]; then
+  if active; then echo "fanmax: ON ($(rpm))"; else echo "fanmax: off, fan_state $(mode_now) ($(rpm))"; fi
+  exit 0
+fi
+
+if active; then
+  # shellcheck disable=SC1090
+  source "$STATE"
+  wmi_set $CPU_DEV "$cpu"
+  wmi_set $GPU_DEV "$gpu"
+  fan_state set "$mode" >/dev/null
+  rm -f "$STATE"
+  echo "fanmax: off, back to fan_state $mode (CPU override $cpu, GPU override $gpu)"
+else
+  printf 'mode=%s\ncpu=%s\ngpu=%s\nsuspends=%s\n' "$(mode_now)" "$(forced 1)" "$(forced 2)" "$(suspends)" >"$STATE"
+  fan_state set 3 >/dev/null
+  wmi_set $CPU_DEV 1
+  wmi_set $GPU_DEV 1
+  echo "fanmax: ON, every fan at full speed. Run fanmax again to go back."
+fi
