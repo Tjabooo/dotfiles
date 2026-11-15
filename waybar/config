@@ -10,11 +10,15 @@
   "spacing": 0,
   "reload_style_on_change": true,
 
-  "modules-left":   ["custom/launcher", "hyprland/workspaces", "mpris"],
+  // stats live on the left island so the right one stops running into the clock
+  "modules-left":   ["custom/launcher", "hyprland/workspaces", "group/stats", "mpris"],
   "modules-center": ["clock", "custom/date"],
-  "modules-right":  ["custom/updates", "custom/house", "custom/vpn", "tray", "custom/awake", "custom/npu", "group/stats",
-                     "backlight", "pulseaudio", "hyprland/language", "network",
-                     "battery", "custom/power"],
+  // right island = a few deck columns (groups); modules inside a column share it without rules
+  "modules-right":  ["group/status", "tray", "group/live", "group/io", "custom/power"],
+
+  "group/status": { "orientation": "inherit", "modules": ["custom/updates", "custom/house", "custom/vpn"] },
+  "group/live":   { "orientation": "inherit", "modules": ["custom/awake", "custom/npu"] },
+  "group/io":     { "orientation": "inherit", "modules": ["pulseaudio", "hyprland/language", "network", "battery"] },
 
   "custom/launcher": {
     "format": "",
@@ -37,8 +41,8 @@
   },
 
   "mpris": {
-    "format": "<span size='8pt' weight='800' color='#9b5de5'>NOW</span>  {dynamic}",
-    "format-paused": "<span size='8pt' weight='800' color='#6c6c8a'>PAUSED</span>  <i>{dynamic}</i>",
+    "format": "<span size='8pt' weight='800' color='#9b5de5'>NOW</span> {dynamic}",
+    "format-paused": "<span size='8pt' weight='800' color='#6c6c8a'>PAUSED</span> <i>{dynamic}</i>",
     "dynamic-order": ["title", "artist"],
     "dynamic-len": 32,
     "player-icons": { "default": "󰎆", "spotify": "", "firefox": "" },
@@ -74,7 +78,7 @@
 
   "custom/updates": {
     "exec": "~/.config/waybar/scripts/updates.sh",   // cached + locked; needs pacman-contrib
-    "format": "<span size='8pt' weight='800' color='#6c6c8a'>UPD</span>  <span weight='800' color='#f15bb5'>{}</span>",
+    "format": "<span size='8pt' weight='800' color='#6c6c8a'>UPD</span> <span weight='800' color='#f15bb5'>{}</span>",
     "interval": 1800,
     "signal": 8,
     "tooltip": false,
@@ -103,7 +107,7 @@
     "on-click-middle": "~/.local/bin/neon-vpn menu"
   },
 
-  "tray": { "icon-size": 15, "spacing": 10 },
+  "tray": { "icon-size": 14, "spacing": 7 },
 
   "custom/awake": {
     "exec": "~/.local/bin/screen-awake status",
@@ -129,23 +133,23 @@
     "orientation": "inherit",
     "modules": ["cpu", "memory"]
   },
-  "cpu":    { "interval": 2, "format": "<span size='8pt' weight='800' color='#6c6c8a'>CPU</span>  {usage}%" },
+  "cpu":    { "interval": 2, "format": "<span size='8pt' weight='800' color='#6c6c8a'>CPU</span> {usage}%" },
   "memory": {
     "interval": 5,
-    "format": "<span size='8pt' weight='800' color='#6c6c8a'>MEM</span>  {used:0.1f}G",
+    "format": "<span size='8pt' weight='800' color='#6c6c8a'>MEM</span> {used:0.1f}G",
     "tooltip-format": "{used:0.1f}G / {total:0.1f}G used"
   },
 
   "backlight": {
-    "format": "<span size='8pt' weight='800' color='#6c6c8a'>BRT</span>  {percent}%",
+    "format": "<span size='8pt' weight='800' color='#6c6c8a'>BRT</span> {percent}%",
     "tooltip": false,
     "on-scroll-up": "brightnessctl -q set 5%+",
     "on-scroll-down": "brightnessctl -q --min-value=1% set 5%-"
   },
 
   "pulseaudio": {
-    "format": "<span size='8pt' weight='800' color='#6c6c8a'>VOL</span>  {volume}%",
-    "format-muted": "<span size='8pt' weight='800'>VOL</span>  MUTED",
+    "format": "<span size='8pt' weight='800' color='#6c6c8a'>VOL</span> {volume}%",
+    "format-muted": "<span size='8pt' weight='800'>VOL</span> MUTED",
     "format-icons": { "default": ["", "", ""] },
     "scroll-step": 5,
     "tooltip": false,
@@ -154,27 +158,27 @@
   },
 
   "hyprland/language": {
-    "format": "<span size='8pt' weight='800' color='#6c6c8a'>KB</span>  {}",
+    "format": "<span size='8pt' weight='800' color='#6c6c8a'>KB</span> {}",
     "format-en": "US",
     "format-sv": "SE",
     "keyboard-name": "at-translated-set-2-keyboard"
   },
 
   "network": {
-    "format-wifi": "<span size='8pt' weight='800' color='#6c6c8a'>NET</span>  {essid}",
-    "format-ethernet": "<span size='8pt' weight='800' color='#6c6c8a'>NET</span>  WIRED",
-    "format-disconnected": "<span size='8pt' weight='800'>NET</span>  OFFLINE",
+    "format-wifi": "<span size='8pt' weight='800' color='#6c6c8a'>NET</span> {essid}",
+    "format-ethernet": "<span size='8pt' weight='800' color='#6c6c8a'>NET</span> LAN",
+    "format-disconnected": "<span size='8pt' weight='800'>NET</span> OFFLINE",
     "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}",
     "tooltip-format-ethernet": "{ifname}\n{ipaddr}",
-    "max-length": 22
+    "max-length": 18
   },
 
   "battery": {
     "states": { "warning": 30, "critical": 15 },
-    "format": "<span size='8pt' weight='800' color='#6c6c8a'>BAT</span>  {capacity}%",
-    "format-charging": "<span size='8pt' weight='800' color='#9b5de5'>CHG</span>  {capacity}%",
-    "format-plugged": "<span size='8pt' weight='800' color='#9b5de5'>AC</span>  {capacity}%",
-    "format-alt": "<span size='8pt' weight='800' color='#6c6c8a'>BAT</span>  {time}",
+    "format": "<span size='8pt' weight='800' color='#6c6c8a'>BAT</span> {capacity}%",
+    "format-charging": "<span size='8pt' weight='800' color='#9b5de5'>CHG</span> {capacity}%",
+    "format-plugged": "<span size='8pt' weight='800' color='#9b5de5'>AC</span> {capacity}%",
+    "format-alt": "<span size='8pt' weight='800' color='#6c6c8a'>BAT</span> {time}",
     "format-icons": ["", "", "", "", ""],
     "tooltip-format": "{timeTo}  ·  {power:0.1f}W"
   },

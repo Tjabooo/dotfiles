@@ -49,7 +49,7 @@ window#waybar.hidden {
 #custom-launcher, #workspaces, #mpris, #clock, #custom-updates, #custom-house, #custom-vpn, #tray,
 #custom-awake, #custom-npu, #cpu, #memory, #backlight, #pulseaudio, #language,
 #network, #battery, #custom-power {
-    padding: 0 10px;
+    padding: 0 7px;
     margin: 0;
     color: @text;
     background: transparent;
@@ -57,11 +57,19 @@ window#waybar.hidden {
 }
 
 /* columns like the deck groups: a 1px rule between neighbours */
-.modules-right > widget:not(:first-child) > *,
-#stats > * {
+/* columns: a 1px rule between neighbouring columns (groups); modules inside one column sit side
+   by side without rules, so related readouts read as one block */
+.modules-right > widget:not(:first-child) > * {
     border-left: 1px solid alpha(@overlay, 0.9);
 }
-#stats > *:first-child { border-left: none; }
+#status, #live, #io { padding: 0 3px; }
+
+/* left island: stats + now playing get their own columns after the workspaces */
+#stats, .modules-left #mpris {
+    border-left: 1px solid alpha(@overlay, 0.9);
+    padding: 0 3px;
+    margin-left: 4px;
+}
 
 /* hover = rofi's selected row: panel + accent edge */
 #mpris:hover, #clock:hover, #custom-updates:hover, #custom-house:hover, #custom-vpn:hover, #custom-awake:hover, #custom-npu:hover,
@@ -132,8 +140,8 @@ window#waybar.hidden {
 /* ── States ──────────────────────────────────────────────── */
 #custom-awake {
     color: @muted;
-    padding-left: 6px;               /* the Nerd Font eye glyph is off-centre */
-    padding-right: 12px;
+    padding-left: 5px;               /* the Nerd Font eye glyph is off-centre */
+    padding-right: 10px;
 }
 #custom-awake.activated {
     color: @base;
