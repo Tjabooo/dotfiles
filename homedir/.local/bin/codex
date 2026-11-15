@@ -1,3 +1,0 @@
-#!/bin/sh
-# Expose the desktop app's bundled CLI to SSH login shells.
-exec /usr/lib/chatgpt/resources/codex "$@"
