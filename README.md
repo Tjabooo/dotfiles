@@ -107,7 +107,6 @@ In Discord/Vesktop, select Dark appearance and enable **midnight neon** under
 **Settings → Vencord → Themes → Local Themes**. Only the theme is versioned here;
 keep account and plugin settings local. Hyprland already provides window opacity/blur.
 
-
 ## Boot: GRUB + Secure Boot (sbctl, no shim)
 
 The firmware trusts only the sbctl key (no Microsoft CA), so there's no shim/MOK like on the
