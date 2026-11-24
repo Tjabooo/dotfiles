@@ -279,6 +279,7 @@ hl.bind("SUPER + O",    hl.dsp.exec_cmd("obsidian"))  -- Obsidian
 hl.bind("SUPER + P",    hl.dsp.exec_cmd("parsecd"))  -- Parsec
 hl.bind("SUPER + SHIFT + F23", hl.dsp.exec_cmd("gaiaui"))  -- GAIA UI
 hl.bind("SUPER + V",    hl.dsp.exec_cmd(bin .. "clipdeck show"))  -- clipboard (every machine)
+hl.bind("SUPER + SHIFT + T", hl.dsp.exec_cmd(bin .. "browser-handoff pick"))  -- continue browsing from another machine
 hl.bind("SUPER + SHIFT + A", hl.dsp.exec_cmd(terminal .. " --class archfleet --title Archfleet -e " .. bin .. "archfleet"))  -- fleet dashboard
 
 -- Scratchpads
