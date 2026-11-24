@@ -97,6 +97,7 @@ hl.config({
         border_size      = 2,
         layout           = "dwindle",
         resize_on_border = true,
+        allow_tearing    = true,   -- only windows with `immediate` tear (edgehop remote view)
         col = {
             -- deck look (neon/eww, rofi, waybar): square frames, solid violet = focused, line = idle
             active_border   = "rgba(9b5de5ff)",
@@ -407,4 +408,5 @@ hl.device({ name = "edgehop-razer-razer-viper-v3-pro",   sensitivity = -0.5, acc
 hl.device({ name = "edgehop-razer-razer-viper-v3-pro-1", sensitivity = -0.5, accel_profile = "flat" })
 hl.bind("SUPER + ALT + K", hl.dsp.exec_cmd(bin .. "edgehop switch"))  -- jump to magi / back
 hl.bind("SUPER + ALT + L", hl.dsp.exec_cmd(bin .. "edgehop view"))  -- remote view on/off: see magi's screen here while driving it
+hl.window_rule({ name = "edgehop-view-tear", match = { class = "^(edgehop-view)$" }, immediate = true })  -- remote view shows frames the moment they arrive
 -- <<< edgehop
