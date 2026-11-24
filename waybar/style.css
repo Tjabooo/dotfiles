@@ -234,7 +234,6 @@ menuitem:hover {
     border-left: 1px solid @overlay;
     margin: 7px 0;
 }
-}
 
 #custom-dnd {
     color: @muted;
