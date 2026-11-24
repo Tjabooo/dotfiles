@@ -17,7 +17,7 @@
   "modules-right":  ["group/status", "tray", "group/live", "group/io", "custom/power"],
 
   "group/status": { "orientation": "inherit", "modules": ["custom/updates", "custom/house", "custom/vpn"] },
-  "group/live":   { "orientation": "inherit", "modules": ["custom/awake", "custom/npu"] },
+  "group/live":   { "orientation": "inherit", "modules": ["custom/awake", "custom/dnd", "custom/npu"] },
   "group/io":     { "orientation": "inherit", "modules": ["pulseaudio", "hyprland/language", "network", "battery"] },
 
   "custom/launcher": {
@@ -108,6 +108,16 @@
   },
 
   "tray": { "icon-size": 14, "spacing": 7 },
+
+  // do not disturb: pauses dunst (dunstctl set-paused); RTMIN+17 refreshes it
+  "custom/dnd": {
+    "exec": "~/.config/waybar/scripts/dnd.sh",
+    "return-type": "json",
+    "interval": 5,
+    "signal": 17,
+    "on-click": "~/.config/waybar/scripts/dnd.sh toggle",
+    "tooltip": true
+  },
 
   "custom/awake": {
     "exec": "~/.local/bin/screen-awake status",

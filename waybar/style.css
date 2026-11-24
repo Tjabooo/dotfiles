@@ -47,7 +47,7 @@ window#waybar.hidden {
 
 /* ── Shared module look ──────────────────────────────────── */
 #custom-launcher, #workspaces, #mpris, #clock, #custom-updates, #custom-house, #custom-vpn, #tray,
-#custom-awake, #custom-npu, #cpu, #memory, #backlight, #pulseaudio, #language,
+#custom-awake, #custom-dnd, #custom-npu, #cpu, #memory, #backlight, #pulseaudio, #language,
 #network, #battery, #custom-power {
     padding: 0 7px;
     margin: 0;
@@ -72,7 +72,7 @@ window#waybar.hidden {
 }
 
 /* hover = rofi's selected row: panel + accent edge */
-#mpris:hover, #clock:hover, #custom-updates:hover, #custom-house:hover, #custom-vpn:hover, #custom-awake:hover, #custom-npu:hover,
+#mpris:hover, #clock:hover, #custom-updates:hover, #custom-house:hover, #custom-vpn:hover, #custom-awake:hover, #custom-dnd:hover, #custom-npu:hover,
 #cpu:hover, #memory:hover, #backlight:hover, #pulseaudio:hover,
 #language:hover, #network:hover, #battery:hover {
     background: @surface;
@@ -233,4 +233,13 @@ menuitem:hover {
     padding: 0 14px 0 10px;
     border-left: 1px solid @overlay;
     margin: 7px 0;
+}
+}
+
+#custom-dnd {
+    color: @muted;
+}
+#custom-dnd.activated {
+    color: @base;
+    background: @violet;
 }
