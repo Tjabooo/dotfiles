@@ -1,0 +1,7 @@
+#!/bin/sh
+# Codex CLI for shells, SSH and SEELE: the desktop app's bundled CLI, else a standalone one.
+for c in /usr/lib/chatgpt/resources/codex /usr/bin/codex "$HOME/.local/share/codex/codex"; do
+  [ -x "$c" ] && exec "$c" "$@"
+done
+echo "codex: no Codex CLI found (install the app or ~/.local/share/codex/codex)" >&2
+exit 127
